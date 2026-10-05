@@ -6,19 +6,25 @@
 
 ---
 
-## 📥 Tải Firmware & Hướng dẫn nạp
+## 📥 Tải Firmware (Download)
 
-Các file binary đã được biên dịch hoàn chỉnh sẵn trong thư mục [`waze-hud/dist/`](./waze-hud/dist/):
+👉 **Truy cập trang phát hành chính thức:** **[GitHub Releases - WazeHUD](https://github.com/quangdo92/waze-hud/releases/latest)**
 
-| Tên file nhị phân | Offset Flash | Dung lượng | Mô tả & Khuyên dùng |
-|---|:---:|:---:|---|
-| **[`waze_hud_cyd_28_factory.bin`](./waze-hud/dist/waze_hud_cyd_28_factory.bin)** | `0x0` | ~1.5 MB | **⭐ KHUYÊN DÙNG:** Bản Flash All-in-One duy nhất (bao gồm Bootloader, Partition Table, OTA data và App). Nạp 1 lần chạy ngay. |
-| **[`waze_hud_cyd_28_factory_20261005_b1.bin`](./waze-hud/dist/waze_hud_cyd_28_factory_20261005_b1.bin)** | `0x0` | ~1.5 MB | Bản lưu trữ theo ngày (Build 1 - 05/10/2026) để flash lại khi cần. |
+Tại trang Releases, chọn tải file `.bin` All-in-One phù hợp với phiên bản mạch phần cứng của bạn:
 
-### 🌐 Cách 1: Nạp trực tiếp qua Web Flasher (Khuyên dùng - Tiện lợi nhất)
-Bạn có thể sử dụng công cụ Web Flasher trực tuyến của tác giả WazeMod ngay trên trình duyệt (Chrome, Edge, Cốc Cốc trên máy tính hoặc điện thoại Android) mà không cần cài đặt Python hay phần mềm:
+| Phiên bản mạch phần cứng | File Firmware trong Release | Link tải trực tiếp (.bin) | Nhánh mã nguồn |
+|---|---|:---:|:---:|
+| **CYD 2.8" (2 Cổng USB Type-C / Micro - BLE)** | `waze_hud_cyd_28_factory.bin` | [📥 **Tải về**](https://github.com/quangdo92/waze-hud/releases/download/v2.8.2/waze_hud_cyd_28_factory.bin) | [`CYD2.8-V2USB`](https://github.com/quangdo92/waze-hud/tree/CYD2.8-V2USB) |
+| **CYD 2.8" (1 Cổng USB Micro - BLE)** | `waze_hud_cyd_28_1usb_factory.bin` | [📥 **Tải về**](https://github.com/quangdo92/waze-hud/releases/download/v2.8.2/waze_hud_cyd_28_1usb_factory.bin) | [`CYD2.8-V1USB`](https://github.com/quangdo92/waze-hud/tree/CYD2.8-V1USB) |
+| **CYD 2.8" Cáp USB Serial (CH340 115200 baud)** | `waze_hud_cyd_28_usb_factory.bin` | [📥 **Tải về**](https://github.com/quangdo92/waze-hud/releases/download/v2.8.2/waze_hud_cyd_28_usb_factory.bin) | [`2.8-in-CYD-USB`](https://github.com/quangdo92/waze-hud/tree/2.8-in-CYD-USB) |
 
-1. Tải file **[`waze_hud_cyd_28_factory.bin`](./waze-hud/dist/waze_hud_cyd_28_factory.bin)** về máy.
+> [!TIP]
+> Toàn bộ các file trên đều là bản **Factory All-in-One** (đã tích hợp sẵn Bootloader, Partition Table và Firmware). Chỉ cần nạp duy nhất 1 file tại offset **`0x0`** là thiết bị khởi động chạy ngay!
+
+### 🌐 Cách 1: Nạp trực tiếp qua Web Flasher (Khuyên dùng - Cực dễ cho mọi người)
+Bạn có thể sử dụng công cụ Web Flasher của tác giả WazeMod trực tiếp trên trình duyệt web (Chrome, Edge, Cốc Cốc trên máy tính hoặc điện thoại Android) mà không cần cài đặt Python hay bất kỳ phần mềm nào:
+
+1. Bấm nút **📥 Tải về** ở bảng trên để tải file `.bin` phù hợp về máy.
 2. Cắm cáp kết nối mạch CYD với máy tính qua cổng USB.
 3. Truy cập công cụ web flasher của tác giả: 👉 **[https://wazemod.io.vn/flash-firmware](https://wazemod.io.vn/flash-firmware)**
 4. Bấm **Kết nối**, chọn đúng cổng COM của mạch ESP32 CYD.
@@ -26,11 +32,11 @@ Bạn có thể sử dụng công cụ Web Flasher trực tuyến của tác gi�
 
 *(Mẹo: Nếu mạch không vào được chế độ flash, hãy nhấn giữ nút **BOOT**, bấm nhả nút **RESET**, sau đó thả nút **BOOT** rồi kết nối lại).*
 
-### 💻 Cách 2: Nạp qua dòng lệnh esptool (Windows PowerShell / Linux Terminal)
+### 💻 Cách 2: Nạp qua dòng lệnh esptool (Dành cho Developer / Terminal)
 
 ```bash
-# Nạp file Factory tại offset 0x0
-python -m esptool --chip esp32 -b 460800 write_flash 0x0 waze-hud/dist/waze_hud_cyd_28_factory.bin
+# Nạp file Factory tương ứng tại offset 0x0
+python -m esptool --chip esp32 -b 460800 write_flash 0x0 <ten_file_factory.bin>
 ```
 
 ---
