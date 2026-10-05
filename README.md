@@ -63,6 +63,12 @@ Bảng thông số chi tiết cấu hình driver phần cứng để phân biệ
 
 ## Nhật ký thay đổi (Changelog)
 
+### [CYD2.82USB] - 2026-10-05
+#### 🚦 Cảnh báo Đèn giao thông mới (Traffic Light Alert - Mã 75)
+- **Hỗ trợ mã cảnh báo 75:** Bổ sung `AlertKind::TrafficLight = 75` đồng bộ với bản cập nhật mới nhất của WazeMod Android (thay vì bị fallback về cảnh báo tam giác chấm than chung `Hazard`).
+- **Biểu tượng hộp đèn giao thông dạng viên thuốc (Pill shape):** Thiết kế độc quyền chuẩn pixel-art với viền bạc mảnh 1px, thân đen, 3 bóng đèn Đỏ - Vàng - Xanh to tròn rực rỡ nổi bật rõ nét trên nền đen taplo HUD (chuẩn 44×44 px cho cảnh báo chính và 26×26 px cho cảnh báo phụ).
+- **Thuật toán ưu tiên cảnh báo:** Tích hợp mức ưu tiên 60 điểm cho đèn giao thông trong phạm vi 250m để hiển thị kịp thời trước ngã tư.
+
 ### [CYD2.82USB / 2.81USB] - 2026-09-24
 #### ✨ Đồ họa & Tương phản (Display & Contrast)
 - **True Black OLED Mode:** Thay thế màu nền xám mờ (`0x030507`) và màu panel (`0x080B0E`) bằng màu đen tuyệt đối `rgb565(0, 0, 0)`, đem lại tương phản cao nhất và chống chói khi để trên taplo xe.
