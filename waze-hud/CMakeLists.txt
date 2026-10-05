@@ -2,4 +2,4 @@ cmake_minimum_required(VERSION 3.16)
 
 set(PROJECT_VER "1.0.8")
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-project(waze_hud_cyd_28)
+project(waze_hud_cyd_28_usb)
