@@ -174,8 +174,3 @@ Khi Waze Mod hỗ trợ `device_config`, HUD gửi lên các thiết lập:
 | Đèn nền (Backlight) | GPIO 21 (LEDC PWM active-high) |
 | LED RGB sau lưng | Đỏ: GPIO 4 \| Xanh lá: GPIO 16 \| Xanh dương: GPIO 17 (active-low) |
 | Nút bấm BOOT | GPIO 0 (active-low) |
-
-
-```bash
-esptool.py --chip esp32 merge_bin -o build/waze_hud_cyd_28_factory.bin --flash_mode dio --flash_size 4MB --flash_freq 40m 0x1000 build/bootloader/bootloader.bin 0x8000 build/partition_table/partition-table.bin 0xf000 build/ota_data_initial.bin 0x20000 build/waze_hud_cyd_28.bin
-```
