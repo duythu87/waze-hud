@@ -51,6 +51,16 @@ python -m esptool --chip esp32 -b 460800 write_flash 0x0 waze-hud/dist/waze_hud_
 
 ### [2.8-in-CYD-USB] - 2026-10-05 (Bản nâng cấp toàn diện cho Taplo Ô tô)
 
+#### 🚦 Cảnh báo Đèn giao thông mới (Traffic Light Alert - Mã 75)
+- **Hỗ trợ mã cảnh báo 75:** Bổ sung `AlertKind::TrafficLight = 75` đồng bộ với bản cập nhật mới nhất của WazeMod Android (thay vì bị fallback về cảnh báo tam giác chấm than chung `Hazard`).
+- **Biểu tượng hộp đèn giao thông dạng viên thuốc (Pill shape):** Thiết kế độc quyền chuẩn pixel-art với viền bạc mảnh 1px, thân đen, 3 bóng đèn Đỏ - Vàng - Xanh to tròn rực rỡ nổi bật rõ nét trên nền đen taplo HUD (chuẩn 44×44 px cho cảnh báo chính và 26×26 px cho cảnh báo phụ).
+- **Thuật toán ưu tiên cảnh báo:** Tích hợp mức ưu tiên 60 điểm cho đèn giao thông trong phạm vi 250m để hiển thị kịp thời trước ngã tư.
+
+#### 🛣️ Cơ chế lưu giữ làn đường thông minh theo vận tốc (Speed-Aware Lane Retention)
+- Tạm ngưng đếm ngược 15s khi tốc độ < 10 km/h (dừng đèn đỏ, kẹt xe): Giữ nguyên số làn đường hiển thị giúp tài xế không bị mất thông tin dẫn làn khi đang dừng chờ.
+- Chỉ tính đếm thời gian 15s khi xe bắt đầu di chuyển đạt tốc độ >= 10 km/h.
+- Tự động ghi đè và cập nhật tức thì không độ trễ ngay khi Waze gửi thông tin làn đường tiếp theo.
+
 #### 🚀 Giao tiếp & Hiệu năng (USB Serial Transport)
 - **Truyền nhận USB Serial cực ổn định:** Loại bỏ hoàn toàn Bluetooth Low Energy, thay bằng `SerialTransport` đọc ghi frame JSON HLP/1 trực tiếp qua cổng USB-UART CH340 ở 115200 baud.
 - **Tiết kiệm RAM & Khởi động tức thì:** Tiết kiệm hơn **80 KB RAM** so với bản BLE, triệt tiêu hoàn toàn nguy cơ rớt kết nối hoặc tràn heap.
