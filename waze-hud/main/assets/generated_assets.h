@@ -180,6 +180,8 @@ extern const ColorBitmap kAlertTrafficJam2Large;
 extern const ColorBitmap kAlertTrafficJam2Small;
 extern const ColorBitmap kAlertTrafficJam4Large;
 extern const ColorBitmap kAlertTrafficJam4Small;
+extern const ColorBitmap kAlertTrafficLightLarge;
+extern const ColorBitmap kAlertTrafficLightSmall;
 extern const ColorBitmap kBootIcon;
 extern const ColorBitmap kNoSpeedCurrent;
 extern const AlphaMask kLaneArrowHeadUp;

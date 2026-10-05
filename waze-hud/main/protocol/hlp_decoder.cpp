@@ -57,7 +57,7 @@ Maneuver maneuverValue(int value) {
 
 AlertKind alertValue(int value) {
     if (value == 0) return AlertKind::None;
-    if (value > 0 && value <= 74) return static_cast<AlertKind>(value);
+    if (value > 0 && value <= 75) return static_cast<AlertKind>(value);
     return value > 0 ? AlertKind::Hazard : AlertKind::None;
 }
 
@@ -133,6 +133,10 @@ int alertPriorityScore(const AlertState &alert) {
     if (isProhibitionAlert(alert.kind)) return 90;
     if (alert.kind == AlertKind::RoadClosed || alert.kind == AlertKind::Accident ||
         alert.kind == AlertKind::Hazard) return 70;
+    if (alert.kind == AlertKind::TrafficLight) {
+        if (alert.distanceM >= 0 && alert.distanceM <= 250) return 60;
+        return 20;
+    }
     if (alert.kind == AlertKind::TrafficJam) return 50;
     if (isCameraAlert(alert.kind)) {
         if (alert.distanceM >= 0 && alert.distanceM <= 250) return 60;
