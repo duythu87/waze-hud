@@ -169,8 +169,8 @@ void HlpDecoder::resetSession() {
     haveTimestamp_ = false;
     cachedLanes_ = {};
     cachedLaneCount_ = 0;
-    cachedLaneManeuver_ = Maneuver::None;
-    laneLostTimestampMs_ = 0;
+    laneHoldAccumulatedMovingMs_ = 0;
+    laneLastCheckMs_ = 0;
 }
 
 bool HlpDecoder::handleHi(const cJSON *root, HudState &state) {
@@ -317,32 +317,39 @@ bool HlpDecoder::decodeState(const cJSON *root, HudState &state) {
 
     const int64_t nowMs = static_cast<int64_t>(esp_timer_get_time() / 1000);
     if (parsedLaneCount > 0) {
+        // Ưu tiên cao nhất: Khi Waze gửi bộ lane mới (kể cả ở nhánh rẽ sát sau), ghi đè và nhảy liền lập tức
         cachedLanes_ = parsedLanes;
         cachedLaneCount_ = parsedLaneCount;
-        cachedLaneManeuver_ = decoded.maneuver;
-        laneLostTimestampMs_ = 0;
+        laneHoldAccumulatedMovingMs_ = 0;
+        laneLastCheckMs_ = nowMs;
         decoded.lanes = cachedLanes_;
         decoded.laneCount = cachedLaneCount_;
-    } else {
+    } else if (cachedLaneCount_ > 0 && decoded.navigationActive) {
+        // Khi không có lane mới từ Waze:
+        const int64_t dt = laneLastCheckMs_ > 0 ? std::clamp(nowMs - laneLastCheckMs_, 0LL, 1000LL) : 0LL;
+        laneLastCheckMs_ = nowMs;
+
+        if (decoded.speedKmh >= 10) {
+            // Khi tốc độ lên cao (>= 10 km/h): Bắt đầu/tiếp tục đếm tích lũy thời gian
+            laneHoldAccumulatedMovingMs_ += dt;
+        }
+        // Khi tốc độ < 10 km/h (dừng đèn đỏ, kẹt xe): TẠM NGƯNG ĐẾM GIÂY (laneHoldAccumulatedMovingMs_ giữ nguyên)
+
         constexpr int64_t kLaneHoldTimeoutMs = 15000;
-        if (cachedLaneCount_ > 0 && decoded.maneuver == cachedLaneManeuver_ &&
-            decoded.maneuver != Maneuver::None) {
-            if (laneLostTimestampMs_ == 0) {
-                laneLostTimestampMs_ = nowMs;
-            }
-            if (nowMs - laneLostTimestampMs_ < kLaneHoldTimeoutMs) {
-                decoded.lanes = cachedLanes_;
-                decoded.laneCount = cachedLaneCount_;
-            } else {
-                cachedLaneCount_ = 0;
-                laneLostTimestampMs_ = 0;
-                decoded.laneCount = 0;
-            }
+        if (laneHoldAccumulatedMovingMs_ < kLaneHoldTimeoutMs) {
+            decoded.lanes = cachedLanes_;
+            decoded.laneCount = cachedLaneCount_;
         } else {
+            // Đã chạy trên 10 km/h đủ 15 giây mà không có lane mới: Xóa lane cũ
             cachedLaneCount_ = 0;
-            laneLostTimestampMs_ = 0;
+            laneHoldAccumulatedMovingMs_ = 0;
             decoded.laneCount = 0;
         }
+    } else {
+        cachedLaneCount_ = 0;
+        laneHoldAccumulatedMovingMs_ = 0;
+        laneLastCheckMs_ = 0;
+        decoded.laneCount = 0;
     }
 
     // Minimum-speed state has no HLP/1 field yet. Only the compile-time mock may populate it.
