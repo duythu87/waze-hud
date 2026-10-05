@@ -113,28 +113,6 @@ python -m esptool --chip esp32 -b 460800 write_flash 0x0 <ten_file_factory.bin>
 
 ---
 
-## Cài firmware nhanh
-
-### File nhị phân đã biên dịch sẵn (Thư mục `dist/`)
-
-| File | Offset flash | Dùng khi nào |
-|---|---|---|
-| [`waze_hud_cyd_28_factory.bin`](./waze-hud/dist/waze_hud_cyd_28_factory.bin) | `0x0` | **Khuyên dùng:** Nạp mới hoàn toàn (chứa bootloader, partition table, ota_data và app) |
-| [`waze_hud_cyd_28.bin`](./waze-hud/dist/waze_hud_cyd_28.bin) | `0x20000` | Nạp cập nhật ứng dụng (giữ nguyên partition table hiện có) |
-
-### Lệnh nạp qua esptool (Windows PowerShell / Linux Terminal)
-
-```bash
-# Nạp bản Factory All-in-One tại offset 0x0
-python -m esptool --chip esp32 -b 460800 write_flash 0x0 waze_hud_cyd_28_factory.bin
-```
-
-*(Thay cổng COM tương ứng, ví dụ `--port COM12` trên Windows hoặc `--port /dev/ttyUSB0` trên Linux).*
-
-Nếu mạch không tự vào chế độ flash, hãy giữ nút **BOOT**, bấm nhả nút **RESET**, sau đó thả nút **BOOT** rồi chạy lệnh.
-
----
-
 ## Kết nối với Waze Mod
 
 1. Bật Bluetooth trên điện thoại.
@@ -197,19 +175,6 @@ Khi Waze Mod hỗ trợ `device_config`, HUD gửi lên các thiết lập:
 | LED RGB sau lưng | Đỏ: GPIO 4 \| Xanh lá: GPIO 16 \| Xanh dương: GPIO 17 (active-low) |
 | Nút bấm BOOT | GPIO 0 (active-low) |
 
----
-
-## Biên dịch từ mã nguồn
-
-Kích hoạt môi trường ESP-IDF (phiên bản v5.5.x):
-
-```bash
-cd waze-hud
-idf.py set-target esp32
-idf.py build
-```
-
-Xuất file Factory hợp nhất:
 
 ```bash
 esptool.py --chip esp32 merge_bin -o build/waze_hud_cyd_28_factory.bin --flash_mode dio --flash_size 4MB --flash_freq 40m 0x1000 build/bootloader/bootloader.bin 0x8000 build/partition_table/partition-table.bin 0xf000 build/ota_data_initial.bin 0x20000 build/waze_hud_cyd_28.bin
