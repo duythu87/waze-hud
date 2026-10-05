@@ -1,12 +1,16 @@
 # WazeHUD cho màn hình CYD 2.8 inch (Bản kết nối USB Serial - Tối ưu Taplo Ô tô)
 
+> [!NOTE]
+> **Lời cảm ơn & Tôn trọng bản quyền tác giả (Credits & Respect):**
+> Dự án này là phiên bản phát triển & tối ưu hóa mở rộng dựa trên mã nguồn gốc [WazeHUD của tác giả ShindouAris](https://github.com/ShindouAris/WazeHUD) và cộng đồng [WazeMod Vietnam](https://wazemod.io.vn). Xin trân trọng ghi nhận và cảm ơn công sức to lớn của tác giả gốc đã tạo nên nền tảng ban đầu tuyệt vời cho cộng đồng người dùng Waze! Xin hãy luôn tôn trọng tác giả gốc và chia sẻ có trích nguồn.
+
 > [!IMPORTANT]
 > **PHIÊN BẢN KẾT NỐI CÓ DÂY QUA CỔNG USB SERIAL (CH340):**
 > Nhánh này loại bỏ hoàn toàn Bluetooth Low Energy (BLE), chuyển sang truyền nhận dữ liệu HLP/1 trực tiếp qua cổng USB Serial ở tốc độ **115200 baud (8N1)**. Điện thoại Android cắm cáp USB OTG vào cổng micro/type-C của mạch CYD. Kết nối cực kỳ ổn định, khởi động nhận ngay lập tức, không có độ trễ sóng và giải phóng hơn **80 KB RAM** trên vi điều khiển ESP32.
 
 ---
 
-## 📥 Tải Firmware (Download)
+## 📥 Tải Firmware & Hướng dẫn nạp
 
 Các file binary đã được biên dịch hoàn chỉnh sẵn trong thư mục [`waze-hud/dist/`](./waze-hud/dist/):
 
@@ -15,7 +19,18 @@ Các file binary đã được biên dịch hoàn chỉnh sẵn trong thư mục
 | **[`waze_hud_cyd_28_usb_factory.bin`](./waze-hud/dist/waze_hud_cyd_28_usb_factory.bin)** | `0x0` | ~1.2 MB | **⭐ KHUYÊN DÙNG:** Bản Flash All-in-One duy nhất (bao gồm Bootloader, Partition Table, OTA data và App). Nạp 1 lần chạy ngay. |
 | **[`waze_hud_cyd_28_usb_factory_20261005_b1.bin`](./waze-hud/dist/waze_hud_cyd_28_usb_factory_20261005_b1.bin)** | `0x0` | ~1.2 MB | Bản lưu trữ theo ngày (Build 1 - 05/10/2026) để flash lại khi cần. |
 
-### Lệnh nạp nhanh qua esptool (Windows PowerShell / Linux Terminal)
+### 🌐 Cách 1: Nạp trực tiếp qua Web Flasher (Khuyên dùng - Tiện lợi nhất)
+Bạn có thể sử dụng công cụ Web Flasher trực tuyến của tác giả WazeMod ngay trên trình duyệt (Chrome, Edge, Cốc Cốc trên máy tính hoặc điện thoại Android) mà không cần cài đặt Python hay phần mềm:
+
+1. Tải file **[`waze_hud_cyd_28_usb_factory.bin`](./waze-hud/dist/waze_hud_cyd_28_usb_factory.bin)** về máy.
+2. Cắm cáp kết nối mạch CYD với máy tính qua cổng USB (chú ý cắm đúng cổng kết nối dữ liệu CH340).
+3. Truy cập công cụ web flasher của tác giả: 👉 **[https://wazemod.io.vn/flash-firmware](https://wazemod.io.vn/flash-firmware)**
+4. Bấm **Kết nối**, chọn đúng cổng COM của mạch ESP32 CYD.
+5. Chọn file `.bin` đã tải, đảm bảo địa chỉ nạp là **`0x0`** và bấm **Flash** để hoàn tất.
+
+*(Mẹo: Nếu mạch không vào được chế độ flash, hãy nhấn giữ nút **BOOT**, bấm nhả nút **RESET**, sau đó thả nút **BOOT** rồi kết nối lại).*
+
+### 💻 Cách 2: Nạp qua dòng lệnh esptool (Windows PowerShell / Linux Terminal)
 
 ```bash
 # Nạp file Factory tại offset 0x0
@@ -23,9 +38,6 @@ python -m esptool --chip esp32 -b 460800 write_flash 0x0 waze-hud/dist/waze_hud_
 ```
 
 *(Thay cổng COM tương ứng, ví dụ `--port COM12` trên Windows hoặc `--port /dev/ttyUSB0` trên Linux).*
-
-> [!TIP]
-> Nếu mạch không tự động vào chế độ Download: Giữ nút **BOOT (GPIO 0)**, nhấn nhả nút **RESET**, sau đó thả nút **BOOT** rồi tiến hành flash.
 
 ---
 
