@@ -1,8 +1,12 @@
 # WazeHUD cho màn hình CYD 2.8 inch (Bản tối ưu Taplo Ô tô)
 
+> [!NOTE]
+> **Lời cảm ơn & Tôn trọng bản quyền tác giả (Credits & Respect):**
+> Dự án này là phiên bản phát triển & tối ưu hóa mở rộng dựa trên mã nguồn gốc [WazeHUD của tác giả ShindouAris](https://github.com/ShindouAris/WazeHUD) và cộng đồng [WazeMod Vietnam](https://wazemod.io.vn). Xin trân trọng ghi nhận và cảm ơn công sức to lớn của tác giả gốc đã tạo nên nền tảng ban đầu tuyệt vời cho cộng đồng người dùng Waze! Xin hãy luôn tôn trọng tác giả gốc và chia sẻ có trích nguồn.
+
 ---
 
-## 📥 Tải Firmware (Download)
+## 📥 Tải Firmware & Hướng dẫn nạp
 
 Các file binary đã được biên dịch hoàn chỉnh sẵn trong thư mục [`waze-hud/dist/`](./waze-hud/dist/):
 
@@ -11,7 +15,18 @@ Các file binary đã được biên dịch hoàn chỉnh sẵn trong thư mục
 | **[`waze_hud_cyd_28_factory.bin`](./waze-hud/dist/waze_hud_cyd_28_factory.bin)** | `0x0` | ~1.5 MB | **⭐ KHUYÊN DÙNG:** Bản Flash All-in-One duy nhất (bao gồm Bootloader, Partition Table, OTA data và App). Nạp 1 lần chạy ngay. |
 | **[`waze_hud_cyd_28_factory_20261005_b1.bin`](./waze-hud/dist/waze_hud_cyd_28_factory_20261005_b1.bin)** | `0x0` | ~1.5 MB | Bản lưu trữ theo ngày (Build 1 - 05/10/2026) để flash lại khi cần. |
 
-### Lệnh nạp nhanh qua esptool (Windows PowerShell / Linux Terminal)
+### 🌐 Cách 1: Nạp trực tiếp qua Web Flasher (Khuyên dùng - Tiện lợi nhất)
+Bạn có thể sử dụng công cụ Web Flasher trực tuyến của tác giả WazeMod ngay trên trình duyệt (Chrome, Edge, Cốc Cốc trên máy tính hoặc điện thoại Android) mà không cần cài đặt Python hay phần mềm:
+
+1. Tải file **[`waze_hud_cyd_28_factory.bin`](./waze-hud/dist/waze_hud_cyd_28_factory.bin)** về máy.
+2. Cắm cáp kết nối mạch CYD với máy tính qua cổng USB.
+3. Truy cập công cụ web flasher của tác giả: 👉 **[https://wazemod.io.vn/flash-firmware](https://wazemod.io.vn/flash-firmware)**
+4. Bấm **Kết nối**, chọn đúng cổng COM của mạch ESP32 CYD.
+5. Chọn file `.bin` đã tải, đảm bảo địa chỉ nạp là **`0x0`** và bấm **Flash** để hoàn tất.
+
+*(Mẹo: Nếu mạch không vào được chế độ flash, hãy nhấn giữ nút **BOOT**, bấm nhả nút **RESET**, sau đó thả nút **BOOT** rồi kết nối lại).*
+
+### 💻 Cách 2: Nạp qua dòng lệnh esptool (Windows PowerShell / Linux Terminal)
 
 ```bash
 # Nạp file Factory tại offset 0x0
