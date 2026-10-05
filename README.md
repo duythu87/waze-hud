@@ -2,6 +2,25 @@
 
 ---
 
+## 📥 Tải Firmware (Download)
+
+Các file binary đã được biên dịch hoàn chỉnh sẵn trong thư mục [`waze-hud/dist/`](./waze-hud/dist/):
+
+| Tên file nhị phân | Offset Flash | Dung lượng | Mô tả & Khuyên dùng |
+|---|:---:|:---:|---|
+| **[`waze_hud_cyd_28_factory.bin`](./waze-hud/dist/waze_hud_cyd_28_factory.bin)** | `0x0` | ~1.5 MB | **⭐ KHUYÊN DÙNG:** Bản Flash All-in-One duy nhất (bao gồm Bootloader, Partition Table, OTA data và App). Nạp 1 lần chạy ngay. |
+| **[`waze_hud_cyd_28.bin`](./waze-hud/dist/waze_hud_cyd_28.bin)** | `0x20000` | ~1.4 MB | Bản cập nhật ứng dụng (App only) khi mạch đã có sẵn phân vùng chuẩn. |
+| **[`waze_hud_cyd_28_factory_20261005_b1.bin`](./waze-hud/dist/waze_hud_cyd_28_factory_20261005_b1.bin)** | `0x0` | ~1.5 MB | Bản lưu trữ theo ngày (Build 1 - 05/10/2026) để flash lại khi cần. |
+
+### Lệnh nạp nhanh qua esptool (Windows PowerShell / Linux Terminal)
+
+```bash
+# Nạp file Factory tại offset 0x0
+python -m esptool --chip esp32 -b 460800 write_flash 0x0 waze-hud/dist/waze_hud_cyd_28_factory.bin
+```
+
+---
+
 ## Tính năng chính & Cải tiến nổi bật
 
 ### 🚗 Tối ưu chuyên biệt cho Taplo Ô tô & Lái xe an toàn
