@@ -1,194 +1,120 @@
-# WazeHUD cho màn hình CYD 2.8 inch
-
-WazeHUD biến mạch ESP32-2432S028 (Cheap Yellow Display) thành màn hình dẫn đường phụ cho ô tô, nhận dữ liệu HLP/1 từ Waze Mod qua USB Serial.
+# WazeHUD cho màn hình CYD 2.8 inch (Bản kết nối USB Serial - Tối ưu Taplo Ô tô)
 
 > [!IMPORTANT]
-> Branch này dành riêng cho mạch **ESP32-2432S028 dùng ESP32-WROOM-32 và màn ILI9341**. Không flash firmware này cho các bản CYD dùng ESP32-S3 hoặc controller màn hình khác.
+> **PHIÊN BẢN KẾT NỐI CÓ DÂY QUA CỔNG USB SERIAL (CH340):**
+> Nhánh này loại bỏ hoàn toàn Bluetooth Low Energy (BLE), chuyển sang truyền nhận dữ liệu HLP/1 trực tiếp qua cổng USB Serial ở tốc độ **115200 baud (8N1)**. Điện thoại Android cắm cáp USB OTG vào cổng micro/type-C của mạch CYD. Kết nối cực kỳ ổn định, khởi động nhận ngay lập tức, không có độ trễ sóng và giải phóng hơn **80 KB RAM** trên vi điều khiển ESP32.
 
-## Hình ảnh thực tế
+---
 
-![WazeHUD hiển thị biển giới hạn tốc độ, cảnh báo và ETA trên CYD 2.8 inch](./assets/demo/image_01.png)
+## 📥 Tải Firmware (Download)
 
-![WazeHUD hoạt động song song với Waze Mod trên điện thoại](./assets/demo/image_02.png)
+Các file binary đã được biên dịch hoàn chỉnh sẵn trong thư mục [`waze-hud/dist/`](./waze-hud/dist/):
 
-## Tính năng chính
+| Tên file nhị phân | Offset Flash | Dung lượng | Mô tả & Khuyên dùng |
+|---|:---:|:---:|---|
+| **[`waze_hud_cyd_28_usb_factory.bin`](./waze-hud/dist/waze_hud_cyd_28_usb_factory.bin)** | `0x0` | ~1.2 MB | **⭐ KHUYÊN DÙNG:** Bản Flash All-in-One duy nhất (bao gồm Bootloader, Partition Table, OTA data và App). Nạp 1 lần chạy ngay. |
+| **[`waze_hud_cyd_28_usb.bin`](./waze-hud/dist/waze_hud_cyd_28_usb.bin)** | `0x20000` | ~1.0 MB | Bản cập nhật ứng dụng (App only) khi mạch đã có sẵn phân vùng chuẩn. |
 
-- Kết nối Waze Mod qua cổng CH340 USB-UART ở `115200 8N1`.
-- Hiển thị tốc độ xe, biển giới hạn tốc độ, hướng rẽ và khoảng cách tới lượt rẽ.
-- Hiển thị cảnh báo chính cùng hai cảnh báo tiếp theo.
-- Lane guidance tối đa 10 làn, có đánh dấu làn được khuyến nghị.
-- Hiển thị ETA, tên đường tiếng Việt và đồng hồ.
-- Hai bố cục tốc độ: ưu tiên tốc độ xe hoặc ưu tiên biển giới hạn.
-- Hỗ trợ lật gương để phản chiếu lên kính lái và xoay màn hình 180°.
-- Lưu độ sáng, giao diện, bố cục và các thiết lập khác vào bộ nhớ NVS.
-- Cập nhật từng vùng thay đổi để giảm độ trễ khi vẽ màn hình.
+### Lệnh nạp nhanh qua esptool (Windows PowerShell / Linux Terminal)
 
-## Cài firmware nhanh
-
-### Chọn đúng file
-
-Firmware phát hành dùng quy tắc đặt tên:
-
-```text
-WazeHUD-<phiên-bản>-WazeMod-<phiên-bản>-<mạch>-<ngày-giờ>-Factory.bin
-WazeHUD-<phiên-bản>-WazeMod-<phiên-bản>-<mạch>-<ngày-giờ>-OTA.bin
+```bash
+# Nạp file Factory tại offset 0x0
+python -m esptool --chip esp32 -b 460800 write_flash 0x0 waze-hud/dist/waze_hud_cyd_28_usb_factory.bin
 ```
 
-| File | Dùng khi nào | Offset |
-|---|---|---:|
-| `Factory.bin` | Cài mới, đổi partition hoặc khôi phục mạch | `0x0` |
-| `OTA.bin` | Chỉ cập nhật app khi mạch đã có đúng partition table | `0x20000` |
+*(Thay cổng COM tương ứng, ví dụ `--port COM12` trên Windows hoặc `--port /dev/ttyUSB0` trên Linux).*
 
-> [!WARNING]
-> Không flash file OTA tại `0x0`. Nếu không chắc firmware cũ dùng partition nào, hãy dùng Factory BIN.
+> [!TIP]
+> Nếu mạch không tự động vào chế độ Download: Giữ nút **BOOT (GPIO 0)**, nhấn nhả nút **RESET**, sau đó thả nút **BOOT** rồi tiến hành flash.
 
-### Flash Factory BIN trên Windows
+---
 
-1. Cắm mạch bằng cáp USB có truyền dữ liệu.
-2. Mở Device Manager để tìm cổng `USB-SERIAL CH340`, ví dụ `COM12`.
-3. Kích hoạt ESP-IDF và flash file Factory:
+## ⚙️ Cấu hình Driver & Phần cứng
 
-```powershell
-. 'C:\Espressif\tools\Microsoft.v5.5.5.PowerShell_profile.ps1'
-esptool.py --chip esp32 --port COM12 --baud 460800 write_flash 0x0 `
-  .\WazeHUD-1.0.6-WazeMod-V12-ESP32-2432S028-YYYYMMDD-HHMMSS-Factory.bin
-```
-
-Thay `COM12` và tên file bằng giá trị thực tế trên máy.
-
-Nếu mạch không tự vào chế độ flash, giữ nút **BOOT**, nhấn rồi thả **RESET**, sau đó thả **BOOT** và chạy lại lệnh.
-
-## Kết nối với Waze Mod
-
-1. Dùng điện thoại hỗ trợ USB OTG/Host và cáp dữ liệu phù hợp.
-2. Cắm CYD vào điện thoại; cấp quyền USB cho Waze Mod khi Android hỏi.
-3. Trong HUD Link, chọn USB Serial và thiết bị CH340 theo VID/PID.
-4. Đặt `115200 baud`, `8N1`, sau đó mở một hành trình trong Waze.
-
-Khi kết nối thành công, firmware thương lượng HLP/1 ở tốc độ cập nhật 4 Hz. Không mở serial monitor đồng thời với Waze Mod. Android có thể hỏi lại quyền sau khi reset hoặc rút/cắm cáp.
-
-## Hiểu trạng thái LED phía sau
-
-| Trạng thái | Màu LED |
+| Thông số / Phần cứng | Cấu hình trên nhánh `2.8-in-CYD-USB` |
 |---|---|
-| Chưa kết nối điện thoại | Đổi màu RGB liên tục |
-| Đã kết nối nhưng chưa có dữ liệu dẫn đường mới | Xanh dương |
-| Tốc độ bình thường | Xanh lá |
-| Vượt ngưỡng tốc độ | Nháy đỏ 2 Hz |
+| **Mạch mục tiêu (Target Board)** | ESP32-2432S028 (Cheap Yellow Display 2.8" ILI9341) |
+| **Giao thức truyền dữ liệu** | **USB Serial UART0** (GPIO 1 TX, GPIO 3 RX) qua chip CH340 onboard |
+| **Tốc độ truyền (Baud Rate)** | **115200 baud, 8 data bits, no parity, 1 stop bit (8N1)** |
+| **Driver Màn hình (LCD Driver)** | `esp_lcd_ili9341` SPI2 @ 40 MHz, BGR element order |
+| **Cấu hình Đảo màu (Color Invert)**| `INVOFF` (`esp_lcd_panel_invert_color = false`) - Sửa lỗi đảo màu trên CYD thực tế |
+| **Cơ chế xoay (Rotation Transform)**| Xoay phần mềm dirty-stripe 240×320 ➔ 320×240 landscape mượt mà |
+| **Sơ đồ chân SPI LCD** | MOSI: 13 \| MISO: 12 \| SCLK: 14 \| CS: 15 \| DC: 2 |
+| **Đèn nền (Backlight)** | GPIO 21 (LEDC PWM 5 kHz, Tự động Ngày/Đêm) |
+| **Đèn LED RGB sau lưng** | GPIO 4 (Đỏ), GPIO 16 (Xanh lá), GPIO 17 (Xanh dương) (Active-low) |
+| **Nút bấm BOOT** | GPIO 0 (Active-low, đa tác vụ 1/2/nhấn giữ) |
+| **Flash & Phân vùng** | 4MB Flash DIO 40MHz, 2 phân vùng OTA 1856 KB |
 
-Tốc độ bằng đúng giới hạn không bị tính là quá tốc. Cảnh báo chỉ bật khi tốc độ xe lớn hơn `giới hạn + offset` đã cấu hình.
+---
 
-## Dùng nút BOOT
+## 📋 Nhật ký thay đổi (Changelog)
 
-Sau khi mạch khởi động xong, nút BOOT có ba thao tác:
+### [2.8-in-CYD-USB] - 2026-10-05 (Bản nâng cấp toàn diện cho Taplo Ô tô)
 
-| Thao tác | Kết quả |
+#### 🚀 Giao tiếp & Hiệu năng (USB Serial Transport)
+- **Truyền nhận USB Serial cực ổn định:** Loại bỏ hoàn toàn Bluetooth Low Energy, thay bằng `SerialTransport` đọc ghi frame JSON HLP/1 trực tiếp qua cổng USB-UART CH340 ở 115200 baud.
+- **Tiết kiệm RAM & Khởi động tức thì:** Tiết kiệm hơn **80 KB RAM** so với bản BLE, triệt tiêu hoàn toàn nguy cơ rớt kết nối hoặc tràn heap.
+- **Vô hiệu hóa Console Log:** Tắt bootloader và console log (`CONFIG_ESP_CONSOLE_NONE=y`) để bảo đảm đường truyền serial JSON cho Waze hoàn toàn sạch rác.
+
+#### ✨ Đồ họa & Màu sắc chuẩn (Display & Colors)
+- **Sửa lỗi đảo màu màn hình CYD:** Thiết lập `esp_lcd_panel_invert_color(panel, false)`. Khắc phục triệt để hiện tượng nền bị trắng và màu đỏ bị biến thành màu xanh lơ trên màn ILI9341 thực tế.
+- **True Black OLED Mode:** Nền đen thuần túy `rgb565(0, 0, 0)` khử hoàn toàn ánh sáng xám mờ ban đêm trên taplo xe.
+- **Viền biển báo Đỏ cờ rực rỡ (`0xF800`):** Nâng cấp toàn bộ biển báo tốc độ và biển cấm sang màu đỏ tươi rực rỡ 100% bão hòa, chuẩn nhận diện biển báo giao thông Việt Nam.
+
+#### 📐 Bố cục & Typography (Layout Enhancements)
+- **Đồng hồ thời gian:** Căn sát biên trên cùng bên phải (`x = width - textWidth - 5`, `y = 4`), hiển thị font trắng tinh (`colors::White`).
+- **Tên đường tiếp theo (Next Street):** Font lớn 22px (`assets::kTextMedium`) ở góc trên trái, tự động chạy chữ (marquee scroll) mượt mà khi chiều dài vượt quá 75px.
+- **Cân đối khu vực rẽ:** Hạ thấp mũi tên chỉ đường và kéo số mét rẽ xuống `y = 108` màu trắng rõ nét, loại bỏ hoàn toàn khoảng trống thừa ở đáy cột trái.
+- **Thông tin chuyến đi (Trip Info):** Khi không có làn đường, hàng dưới cùng tự động chuyển sang hiển thị số **KM còn lại** và **Thời gian dự kiến (phút)**.
+
+#### 🧠 Thuật toán & An toàn lái xe (Smart Logic & Alerts)
+- **Cảnh báo quá tốc độ khẩn cấp (Overspeed Emergency Visual Alert):** Khung viền đỏ 4px bao quanh toàn bộ 4 cạnh màn hình chớp nháy 2Hz + số tốc độ xe nhấp nháy đỏ/trắng khi chạy quá tốc độ giới hạn.
+- **Ưu tiên thông minh các cảnh báo (Alert Prioritization):**
+  - Biển giảm tốc độ `SpeedDrop` (Điểm 100).
+  - Biển cấm (Cấm vượt, cấm rẽ, cấm ô tô...) (Điểm 90).
+  - Nguy hiểm, tai nạn, đóng đường (Điểm 70).
+  - Camera tốc độ gần (< 250m) (Điểm 60).
+  - Ùn tắc giao thông (Điểm 50).
+  - Camera ở xa > 250m (Điểm 10).
+  *(Tránh triệt để việc camera cách 1km đè mất cảnh báo giảm tốc độ nguy hiểm ngay trước mặt).*
+- **Giữ làn đường thông minh (Lane Retention):** Giữ làn đường thêm 15 giây khi xe tiến vào ngã tư, không bị mất làn đột ngột khi qua giao lộ.
+- **Tự động chỉnh độ sáng Ngày / Đêm:**
+  - `06:00 – 17:30`: Sáng 100% chống chói nắng.
+  - `17:30 – 19:00`: Giảm dần đều từ 100% về 30%.
+  - `19:00 – 05:00`: Duy trì 30% chống lóa mắt ban đêm.
+  - `05:00 – 06:00`: Tăng dần đều từ 30% lên 100%.
+
+---
+
+## 🔌 Hướng dẫn kết nối với Waze Mod
+
+1. Dùng điện thoại Android hỗ trợ USB OTG và cáp USB truyền dữ liệu (Type-C sang Type-C hoặc Type-C sang Micro-USB tùy loại cổng trên mạch CYD).
+2. Cắm mạch CYD vào điện thoại. Khi Android hiện thông báo yêu cầu cấp quyền truy cập USB cho ứng dụng Waze Mod, chọn **Đồng ý / Luôn mở**.
+3. Trong menu **HUD Link** của Waze Mod:
+   - Chọn phương thức kết nối: **USB Serial**.
+   - Chọn thiết bị USB CH340 theo danh sách.
+   - Đặt tốc độ truyền: **115200 baud**, **8N1**.
+4. Mở lộ trình dẫn đường trong Waze, màn hình HUD sẽ lập tức hiển thị dữ liệu dẫn đường theo thời gian thực.
+
+---
+
+## 🔘 Thao tác với nút bấm cứng (BOOT)
+
+| Thao tác nút BOOT | Tác dụng |
 |---|---|
-| Nhấn một lần | Xoay màn hình 180° |
-| Nhấn đúp | Bật hoặc tắt lật gương HUD |
-| Nhấn giữ | Hiện trạng thái USB của thiết bị |
+| **Nhấn 1 lần** | Xoay ngược màn hình 180° (tiện cho việc cắm cáp từ trên xuống hoặc từ dưới lên) |
+| **Nhấn đúp (2 lần)** | Bật / Tắt chế độ lật gương (Mirror HUD) chiếu hắt kính lái |
+| **Nhấn giữ** | Mở màn hình chẩn đoán (hiển thị trạng thái kết nối `USB ĐÃ KẾT NỐI`) |
 
-Lật gương và xoay 180° hoạt động độc lập, đồng thời được lưu lại sau khi mất nguồn.
+*Các thiết lập xoay và lật gương được tự động lưu vào bộ nhớ flash NVS và không bị mất khi rút nguồn.*
 
-## Cấu hình từ Waze Mod
+---
 
-Khi Waze Mod hỗ trợ `device_config`, HUD gửi lên chín thiết lập sau:
+## 💡 Trạng thái đèn LED RGB phía sau
 
-| Thiết lập | Giá trị | Ý nghĩa |
+| Trạng thái xe & kết nối | Màu LED RGB | Ý nghĩa |
 |---|---|---|
-| Độ sáng | 10–100%, bước 5% | Điều chỉnh đèn nền màn hình |
-| Giao diện | Tự động / Ban ngày / Ban đêm | Chọn màu giao diện |
-| Hiển thị tốc độ | Tốc độ hiện tại / Biển giới hạn | Chọn thành phần tốc độ chính |
-| Hiện tên đường | Bật / Tắt | Ẩn hoặc hiện tên đường |
-| Phản chiếu HUD | Bật / Tắt | Lật ngang để phản chiếu kính lái |
-| Xoay màn hình | Bật / Tắt | Xoay 180° theo hướng lắp mạch |
-| Ngưỡng quá tốc | −10 đến +5 km/h | Bù vào giới hạn trước khi cảnh báo |
-| Dịch ngang | −5 đến +5 px | Tinh chỉnh vị trí giao diện |
-| Dịch dọc | −5 đến +5 px | Tinh chỉnh vị trí giao diện |
-
-Ở chế độ **Biển giới hạn**, biển báo được phóng lớn làm nội dung chính; tốc độ xe hiện tại xuất hiện nhỏ ở góc dưới-phải của biển.
-
-## Build từ mã nguồn
-
-### Yêu cầu
-
-- ESP-IDF 5.5.5.
-- Mạch ESP32-2432S028, flash 4 MB, không có PSRAM.
-- Cáp USB dữ liệu và driver CH340 trên Windows.
-
-### Build và flash
-
-```powershell
-. 'C:\Espressif\tools\Microsoft.v5.5.5.PowerShell_profile.ps1'
-Set-Location D:\Code\WazeHUD\waze-hud
-idf.py set-target esp32
-idf.py build
-idf.py -p COM12 -b 460800 flash
-```
-
-Thành phẩm app nằm tại:
-
-```text
-waze-hud/build/waze_hud_cyd_28.bin
-```
-
-### Chạy giao diện thử không cần điện thoại
-
-Mock mode lần lượt hiển thị các tình huống như rẽ, vòng xuyến, quá tốc, cảnh báo, tên đường dài và lane guidance 10 làn.
-
-```powershell
-idf.py -B build-mock `
-  -D SDKCONFIG=sdkconfig.mock `
-  -D "SDKCONFIG_DEFAULTS=sdkconfig.defaults;sdkconfig.mock.defaults" `
-  set-target esp32
-idf.py -B build-mock -D SDKCONFIG=sdkconfig.mock build
-```
-
-## Thông số phần cứng
-
-| Chức năng | GPIO / thông số |
-|---|---|
-| LCD | ILI9341, SPI2, 40 MHz |
-| MOSI / MISO / SCLK | 13 / 12 / 14 |
-| LCD CS / DC | 15 / 2 |
-| LCD reset | Nối chung với EN |
-| Backlight PWM | GPIO21, active-high |
-| LED đỏ / xanh lá / xanh dương | GPIO4 / GPIO16 / GPIO17, active-low |
-| Nút BOOT | GPIO0, active-low |
-| Độ phân giải | 320×240 landscape |
-
-Màn hình được giữ ở address space gốc 240×320. Firmware xoay các dirty stripe bằng phần mềm sang giao diện landscape 320×240 để màu sắc và chiều hiển thị ổn định giữa các lô CYD.
-
-## Xử lý lỗi thường gặp
-
-| Hiện tượng | Cách kiểm tra |
-|---|---|
-| Không thấy cổng COM | Đổi cáp USB, cài driver CH340 và thử cổng USB khác |
-| Flash không kết nối được | Giữ BOOT, nhấn RESET, thả RESET rồi thả BOOT |
-| Màn hình tối | Kiểm tra đúng mạch ESP32-2432S028 và backlight GPIO21 |
-| Màu đỏ/xanh bị đảo | Kiểm tra đúng controller ILI9341 và profile BGR |
-| Màn hình ngược | Nhấn BOOT một lần hoặc bật cấu hình xoay màn hình |
-| Hình bị lật | Nhấn đúp BOOT hoặc tắt `Phản chiếu HUD` |
-| Điện thoại không thấy HUD | Kiểm tra USB OTG, cáp dữ liệu, quyền USB và thiết bị CH340 |
-| Đã kết nối nhưng chưa có dữ liệu | Bắt đầu hành trình trong Waze và kiểm tra LED xanh dương |
-
-## Tài liệu kỹ thuật
-
-- [Chi tiết quá trình port CYD 2.8 inch](./waze-hud/DISPLAY_CYD_28_PORTING.md)
-- [Hướng dẫn flash firmware bằng tiếng Việt](./waze-hud/FLASH_FIRMWARE_VI.md)
-- [Đặc tả giao thức HLP/1](./waze-hud-link-sdk-ai-bundle.md)
-
-## Cấu trúc mã nguồn
-
-```text
-waze-hud/main/
-├── serial/      # UART0 qua CH340, RX/TX HLP/1
-├── protocol/    # HLP/1 framing, handshake và JSON decoder
-├── state/       # Snapshot trạng thái HUD giữa các task
-├── display/     # Layout, renderer, font và driver ILI9341
-├── config/      # Cấu hình động và lưu NVS
-├── system/      # LED RGB, nút BOOT và trạng thái hệ thống
-└── assets/      # Ảnh/font đã chuyển thành dữ liệu nhúng
-```
-
-UART event chỉ đưa byte stream vào protocol task. Framing JSON-lines, cập nhật state và truyền ảnh RGB565 tới LCD được xử lý ngoài driver UART.
+| Chưa kết nối điện thoại | Đổi màu RGB liên tục | Đang chờ cắm cáp USB |
+| Đã cắm cáp, chờ dữ liệu dẫn đường | Xanh dương | Đã nhận diện cổng USB Serial |
+| Tốc độ bình thường (đang dẫn đường) | **TẮT** | Giữ khoang lái tối dịu mắt ban đêm |
+| Chạy quá tốc độ giới hạn | **Nháy đỏ 2 Hz** | Cảnh báo xe đang chạy vượt tốc độ cho phép |
