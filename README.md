@@ -69,6 +69,11 @@ Bảng thông số chi tiết cấu hình driver phần cứng để phân biệ
 - **Biểu tượng hộp đèn giao thông dạng viên thuốc (Pill shape):** Thiết kế độc quyền chuẩn pixel-art với viền bạc mảnh 1px, thân đen, 3 bóng đèn Đỏ - Vàng - Xanh to tròn rực rỡ nổi bật rõ nét trên nền đen taplo HUD (chuẩn 44×44 px cho cảnh báo chính và 26×26 px cho cảnh báo phụ).
 - **Thuật toán ưu tiên cảnh báo:** Tích hợp mức ưu tiên 60 điểm cho đèn giao thông trong phạm vi 250m để hiển thị kịp thời trước ngã tư.
 
+#### 🛣️ Cơ chế lưu giữ làn đường thông minh theo vận tốc (Speed-Aware Lane Retention)
+- Tạm ngưng đếm ngược 15s khi tốc độ < 10 km/h (dừng đèn đỏ, kẹt xe): Giữ nguyên số làn đường hiển thị giúp tài xế không bị mất thông tin dẫn làn khi đang dừng chờ.
+- Chỉ tính đếm thời gian 15s khi xe bắt đầu di chuyển đạt tốc độ >= 10 km/h.
+- Tự động ghi đè và cập nhật tức thì không độ trễ ngay khi Waze gửi thông tin làn đường tiếp theo.
+
 ### [CYD2.82USB / 2.81USB] - 2026-09-24
 #### ✨ Đồ họa & Tương phản (Display & Contrast)
 - **True Black OLED Mode:** Thay thế màu nền xám mờ (`0x030507`) và màu panel (`0x080B0E`) bằng màu đen tuyệt đối `rgb565(0, 0, 0)`, đem lại tương phản cao nhất và chống chói khi để trên taplo xe.
