@@ -186,8 +186,8 @@ void drawGuidanceLane(Canvas &canvas, int x, int spacing, const LaneState &lane,
     constexpr int midY = 38;
     constexpr int topY = 14;
     constexpr int stroke = 4;
-    constexpr int arrowSize = 9;    // slightly larger head for sharper look
-    constexpr int branchLen = 18;   // slightly longer branch for clarity
+    constexpr int arrowSize = 9;
+    constexpr int branchLen = 10;   // shortened from 18
 
     const bool hasStraight = (lane.directionMask & 0x01) != 0;
     const bool hasSlightLeft = (lane.directionMask & 0x02) != 0;
@@ -213,19 +213,15 @@ void drawGuidanceLane(Canvas &canvas, int x, int spacing, const LaneState &lane,
     const uint16_t cUTurn = uTurnActive ? foregroundColor : colors::Muted;
     const uint16_t baseCol = isLaneSelected ? foregroundColor : colors::Muted;
 
-    // Solid green indicator bar under selected lane
     if (isLaneSelected) {
         const int barW = std::clamp(spacing - 6, 10, 32);
         canvas.fillRect(x - barW / 2, 73, barW, 4, colors::Green);
     }
 
-    // Helper: draw diagonal arrow head following the (dx,dy) direction of the branch
-    // endX/endY = tip of arrow, startX/startY = base of branch (for direction vector)
     auto diagonalHead = [&](int tipX, int tipY, int startX, int startY, uint16_t col) {
         arrowHead(canvas, tipX, tipY, tipX - startX, tipY - startY, col, 3);
     };
 
-    // 1. COMBINATION: STRAIGHT + U-TURN
     if (hasStraight && hasUTurn) {
         const int sx = x + 6;
         const int lx = x - 7;
@@ -234,10 +230,14 @@ void drawGuidanceLane(Canvas &canvas, int x, int spacing, const LaneState &lane,
         canvas.line(sx, baseY, sx, topY, cStraight, stroke);
         drawArrowHeadDir(canvas, sx, topY - arrowSize / 2, 0, cStraight, arrowSize);
 
-        // U-turn: smooth corner with fillCircle at bend
-        canvas.line(sx, forkY, lx, forkY, cUTurn, stroke);
-        canvas.line(lx, forkY, lx, midY + 14, cUTurn, stroke);
-        canvas.fillCircle(lx, forkY, stroke / 2, cUTurn);  // smooth corner
+        canvas.line(sx, forkY + 3, sx - 3, forkY, cUTurn, stroke);
+        canvas.line(sx - 3, forkY, lx + 3, forkY, cUTurn, stroke);
+        canvas.line(lx + 3, forkY, lx, forkY + 3, cUTurn, stroke);
+        canvas.line(lx, forkY + 3, lx, midY + 14, cUTurn, stroke);
+        canvas.fillCircle(sx, forkY + 3, stroke / 2, cUTurn);
+        canvas.fillCircle(sx - 3, forkY, stroke / 2, cUTurn);
+        canvas.fillCircle(lx + 3, forkY, stroke / 2, cUTurn);
+        canvas.fillCircle(lx, forkY + 3, stroke / 2, cUTurn);
         drawArrowHeadDir(canvas, lx, midY + 14 + arrowSize, 1, cUTurn, arrowSize);
 
         if (hasLeft) {
@@ -254,17 +254,19 @@ void drawGuidanceLane(Canvas &canvas, int x, int spacing, const LaneState &lane,
         return;
     }
 
-    // 2. COMBINATION: U-TURN only (+ optional LEFT/RIGHT, without straight)
     if (hasUTurn && !hasStraight) {
         const int rx = x + 5;
         const int lx = x - 8;
 
-        canvas.line(rx, baseY, rx, topY + 4, cUTurn, stroke);
-        canvas.line(rx, topY + 4, lx, topY + 4, cUTurn, stroke);
-        canvas.line(lx, topY + 4, lx, midY + 14, cUTurn, stroke);
-        // Smooth corner at top-right and top-left bends
-        canvas.fillCircle(rx, topY + 4, stroke / 2, cUTurn);
-        canvas.fillCircle(lx, topY + 4, stroke / 2, cUTurn);
+        canvas.line(rx, baseY, rx, topY + 4 + 3, cUTurn, stroke);
+        canvas.line(rx, topY + 4 + 3, rx - 3, topY + 4, cUTurn, stroke);
+        canvas.line(rx - 3, topY + 4, lx + 3, topY + 4, cUTurn, stroke);
+        canvas.line(lx + 3, topY + 4, lx, topY + 4 + 3, cUTurn, stroke);
+        canvas.line(lx, topY + 4 + 3, lx, midY + 14, cUTurn, stroke);
+        canvas.fillCircle(rx, topY + 4 + 3, stroke / 2, cUTurn);
+        canvas.fillCircle(rx - 3, topY + 4, stroke / 2, cUTurn);
+        canvas.fillCircle(lx + 3, topY + 4, stroke / 2, cUTurn);
+        canvas.fillCircle(lx, topY + 4 + 3, stroke / 2, cUTurn);
         drawArrowHeadDir(canvas, lx, midY + 14 + arrowSize, 1, cUTurn, arrowSize);
 
         if (hasLeft) {
@@ -281,57 +283,57 @@ void drawGuidanceLane(Canvas &canvas, int x, int spacing, const LaneState &lane,
         return;
     }
 
-    // 3. ONLY LEFT (90 deg) — with smooth corner arc
     if (hasLeft && !hasStraight && !hasRight) {
         const int rx = x + 5;
         const int lx = x - branchLen;
-        canvas.line(rx, baseY, rx, topY + 4, cLeft, stroke);
-        canvas.line(rx, topY + 4, lx, topY + 4, cLeft, stroke);
-        canvas.fillCircle(rx, topY + 4, stroke / 2, cLeft);  // smooth corner
+        canvas.line(rx, baseY, rx, topY + 4 + 3, cLeft, stroke);
+        canvas.line(rx, topY + 4 + 3, rx - 3, topY + 4, cLeft, stroke);
+        canvas.line(rx - 3, topY + 4, lx, topY + 4, cLeft, stroke);
+        canvas.fillCircle(rx, topY + 4 + 3, stroke / 2, cLeft);
+        canvas.fillCircle(rx - 3, topY + 4, stroke / 2, cLeft);
         drawArrowHeadDir(canvas, lx - arrowSize, topY + 4, 2, cLeft, arrowSize);
         return;
     }
 
-    // 4. ONLY RIGHT (90 deg) — with smooth corner arc
     if (hasRight && !hasStraight && !hasLeft) {
         const int lx = x - 5;
         const int rx = x + branchLen;
-        canvas.line(lx, baseY, lx, topY + 4, cRight, stroke);
-        canvas.line(lx, topY + 4, rx, topY + 4, cRight, stroke);
-        canvas.fillCircle(lx, topY + 4, stroke / 2, cRight);  // smooth corner
+        canvas.line(lx, baseY, lx, topY + 4 + 3, cRight, stroke);
+        canvas.line(lx, topY + 4 + 3, lx + 3, topY + 4, cRight, stroke);
+        canvas.line(lx + 3, topY + 4, rx, topY + 4, cRight, stroke);
+        canvas.fillCircle(lx, topY + 4 + 3, stroke / 2, cRight);
+        canvas.fillCircle(lx + 3, topY + 4, stroke / 2, cRight);
         drawArrowHeadDir(canvas, rx + arrowSize, topY + 4, 3, cRight, arrowSize);
         return;
     }
 
-    // 5. COMBINATIONS WITH STRAIGHT (or ONLY STRAIGHT)
     if (hasStraight) {
         canvas.line(x, baseY, x, midY, baseCol, stroke);
         canvas.line(x, midY, x, topY, cStraight, stroke);
         drawArrowHeadDir(canvas, x, topY - arrowSize / 2, 0, cStraight, arrowSize);
 
-        // Left branch (90 deg) — with smooth corner
         if (hasLeft) {
             const int lx = x - branchLen;
-            canvas.line(x, midY, lx, midY, cLeft, stroke);
-            canvas.fillCircle(x, midY, stroke / 2, cLeft);  // corner dot
+            canvas.line(x, midY + 3, x - 3, midY, cLeft, stroke);
+            canvas.line(x - 3, midY, lx, midY, cLeft, stroke);
+            canvas.fillCircle(x, midY + 3, stroke / 2, cLeft);
+            canvas.fillCircle(x - 3, midY, stroke / 2, cLeft);
             drawArrowHeadDir(canvas, lx - arrowSize, midY, 2, cLeft, arrowSize);
         } else if (hasSlightLeft) {
-            // Diagonal branch — use longer stem & diagonal arrowHead matching the line direction
             const int lx = x - branchLen * 4 / 5;
             const int ly = midY - 12;
             canvas.line(x, midY, lx, ly, cSlightLeft, stroke);
-            // Arrowhead along the diagonal direction (dx = lx-x, dy = ly-midY)
             arrowHead(canvas, lx, ly, lx - x, ly - midY, cSlightLeft, 3);
         }
 
-        // Right branch (90 deg) — with smooth corner
         if (hasRight) {
             const int rx = x + branchLen;
-            canvas.line(x, midY, rx, midY, cRight, stroke);
-            canvas.fillCircle(x, midY, stroke / 2, cRight);  // corner dot
+            canvas.line(x, midY + 3, x + 3, midY, cRight, stroke);
+            canvas.line(x + 3, midY, rx, midY, cRight, stroke);
+            canvas.fillCircle(x, midY + 3, stroke / 2, cRight);
+            canvas.fillCircle(x + 3, midY, stroke / 2, cRight);
             drawArrowHeadDir(canvas, rx + arrowSize, midY, 3, cRight, arrowSize);
         } else if (hasSlightRight) {
-            // Diagonal branch — arrowHead along the line direction
             const int rx = x + branchLen * 4 / 5;
             const int ry = midY - 12;
             canvas.line(x, midY, rx, ry, cSlightRight, stroke);
@@ -340,7 +342,6 @@ void drawGuidanceLane(Canvas &canvas, int x, int spacing, const LaneState &lane,
         return;
     }
 
-    // Fallback: draw straight base
     canvas.line(x, baseY, x, topY, baseCol, stroke);
     drawArrowHeadDir(canvas, x, topY - arrowSize / 2, 0, baseCol, arrowSize);
 }
@@ -551,6 +552,64 @@ const char *alertKindLabel(AlertKind kind) {
         case AlertKind::Pothole: return "Ổ GÀ";
         case AlertKind::Weather: return "THỜI TIẾT";
         case AlertKind::BlockedLane: return "CHẮN LÀN";
+        case AlertKind::DangerousRoad: return "ĐƯỜNG NGUY HIỂM";
+        case AlertKind::ExpresswayExit: return "LỐI RA CAO TỐC";
+        case AlertKind::ExpresswayRestStop: return "TRẠM DỪNG CAO TỐC";
+        case AlertKind::RestStop: return "TRẠM DỪNG";
+        case AlertKind::EndSpeedRestriction: return "HẾT GIỚI HẠN TỐC ĐỘ";
+        case AlertKind::ResidentialStart: return "KHU DÂN CƯ";
+        case AlertKind::ResidentialEnd: return "HẾT KHU DÂN CƯ";
+        case AlertKind::EndAllProhibitions: return "HẾT MỌI LỆNH CẤM";
+        case AlertKind::NoCar: return "CẤM Ô TÔ";
+        case AlertKind::NoMotorcycle: return "CẤM XE MÁY";
+        case AlertKind::NoLeftTurn: return "CẤM RẼ TRÁI";
+        case AlertKind::NoRightTurn: return "CẤM RẼ PHẢI";
+        case AlertKind::NoUTurn: return "CẤM QUAY ĐẦU";
+        case AlertKind::NoStraight: return "CẤM ĐI THẲNG";
+        case AlertKind::MandatoryStraight: return "ĐI THẲNG";
+        case AlertKind::MandatoryRight: return "RẼ PHẢI";
+        case AlertKind::MandatoryLeft: return "RẼ TRÁI";
+        case AlertKind::CarLane: return "LÀN Ô TÔ";
+        case AlertKind::MotorcycleLane: return "LÀN XE MÁY";
+        case AlertKind::OneWay: return "ĐƯỜNG 1 CHIỀU";
+        case AlertKind::ProhibitedRoad: return "ĐƯỜNG CẤM";
+        case AlertKind::CombinedTurnRestriction: return "CẤM RẼ";
+        case AlertKind::PhoneCamera: return "CAM ĐIỆN THOẠI";
+        case AlertKind::DummyCamera: return "CAM GIẢ";
+        case AlertKind::SeatbeltCamera: return "CAM DÂY AN TOÀN";
+        case AlertKind::DistanceCamera: return "CAM KHOẢNG CÁCH";
+        case AlertKind::BusLaneCamera: return "CAM LÀN BUS";
+        case AlertKind::NoiseCamera: return "CAM TIẾNG ỒN";
+        case AlertKind::StopSignCamera: return "CAM DỪNG ĐỖ";
+        case AlertKind::Animal: return "ĐỘNG VẬT";
+        case AlertKind::ObjectOnRoad: return "VẬT CẢN";
+        case AlertKind::Roadkill: return "ĐỘNG VẬT CHẾT";
+        case AlertKind::Flood: return "NGẬP LỤT";
+        case AlertKind::Fog: return "SƯƠNG MÙ";
+        case AlertKind::Hail: return "MƯA ĐÁ";
+        case AlertKind::Snow: return "TUYẾT";
+        case AlertKind::Ice: return "BĂNG GIÁ";
+        case AlertKind::SlipperyRoad: return "ĐƯỜNG TRƠN";
+        case AlertKind::SpeedBump: return "GỜ GIẢM TỐC";
+        case AlertKind::SchoolZone: return "TRƯỜNG HỌC";
+        case AlertKind::LanesMerging: return "NHẬP LÀN";
+        case AlertKind::DangerousCurve: return "ĐƯỜNG CONG";
+        case AlertKind::Fork: return "NGÃ RẼ";
+        case AlertKind::BrokenLight: return "ĐÈN HỎNG";
+        case AlertKind::Cyclist: return "XE ĐẠP";
+        case AlertKind::EmergencyVehicle: return "XE ƯU TIÊN";
+        case AlertKind::PersonalSafety: return "AN TOÀN CÁ NHÂN";
+        case AlertKind::NoStraightAndRight: return "CẤM THẲNG VÀ PHẢI";
+        case AlertKind::NoLeftAndUTurn: return "CẤM TRÁI VÀ QUAY ĐẦU";
+        case AlertKind::NoStraightAndLeft: return "CẤM THẲNG VÀ TRÁI";
+        case AlertKind::NoLeftAndRight: return "CẤM TRÁI VÀ PHẢI";
+        case AlertKind::CarNoLeftAndUTurn: return "Ô TÔ CẤM TRÁI VÀ QUAY ĐẦU";
+        case AlertKind::CarNoRightAndUTurn: return "Ô TÔ CẤM PHẢI VÀ QUAY ĐẦU";
+        case AlertKind::NoRightAndUTurn: return "CẤM PHẢI VÀ QUAY ĐẦU";
+        case AlertKind::CarNoLeftTurn: return "Ô TÔ CẤM RẼ TRÁI";
+        case AlertKind::CarNoRightTurn: return "Ô TÔ CẤM RẼ PHẢI";
+        case AlertKind::CarNoUTurn: return "Ô TÔ CẤM QUAY ĐẦU";
+        case AlertKind::TrafficLight: return "ĐÈN ĐỎ";
         default: return "CẢNH BÁO";
     }
 }
@@ -1222,12 +1281,28 @@ void HudRenderer::renderAlerts(Canvas &canvas, const HudState &state, const Devi
                 std::snprintf(trafficDetail, sizeof(trafficDetail), "%.20s",
                               trafficSeverityLabel(primary.trafficSeverity));
 #if CONFIG_WAZE_HUD_DISPLAY_CYD_28
-            const int trafficY = hasSecondary ? 78 : 96;
-            canvas.fontText(1, trafficY, trafficDetail, assets::kTextSmall,
+            const int labelY = hasSecondary ? 78 : 96;
+            canvas.fontText(1, labelY, trafficDetail, assets::kTextSmall,
                             trafficSeverityColor(primary.trafficSeverity), 93, true);
 #else
             canvas.fontText(1, mainY(78), trafficDetail, assets::kTextSmall,
                             trafficSeverityColor(primary.trafficSeverity), 93, true);
+#endif
+        } else if (primary.valueKmh > 0) {
+            char valBuf[32];
+            std::snprintf(valBuf, sizeof(valBuf), "G/H: %d km/h", primary.valueKmh);
+#if CONFIG_WAZE_HUD_DISPLAY_CYD_28
+            const int labelY = hasSecondary ? 78 : 96;
+            canvas.fontText(1, labelY, valBuf, assets::kTextSmall, colors::Amber, 93, true);
+#else
+            canvas.fontText(1, mainY(78), valBuf, assets::kTextSmall, colors::Amber, 93, true);
+#endif
+        } else {
+#if CONFIG_WAZE_HUD_DISPLAY_CYD_28
+            const int labelY = hasSecondary ? 78 : 96;
+            canvas.fontText(1, labelY, alertKindLabel(primary.kind), assets::kTextSmall, colors::White, 93, true);
+#else
+            canvas.fontText(1, mainY(78), alertKindLabel(primary.kind), assets::kTextSmall, colors::White, 93, true);
 #endif
         }
     }
@@ -1274,7 +1349,7 @@ void HudRenderer::renderGuidance(Canvas &canvas, const HudState &state,
 
     const uint8_t totalLanes = std::min<uint8_t>(state.laneCount, kMaxLanes);
     if (totalLanes > 0) {
-        constexpr uint8_t kMaxVisibleLanes = 6;
+        constexpr uint8_t kMaxVisibleLanes = 8;
         uint8_t startIdx = 0;
         uint8_t visibleCount = totalLanes;
 
@@ -1445,7 +1520,7 @@ void HudRenderer::renderGuidance(Canvas &canvas, const HudState &state,
         } else {
             drawCard(canvas, 16, 12, 288, 58, colors::Muted);
             canvas.fillCircle(45, 41, 14, colors::Green);
-            canvas.fontText(72, 22, "LỘ TRÌNH THÔNG THOÁNG", assets::kTextMedium, colors::Green, 220, false);
+            canvas.fontText(72, 22, "LỘ TRÌNH AN TOÀN", assets::kTextMedium, colors::Green, 220, false);
             canvas.fontText(72, 44, "Không có cảnh báo phía trước", assets::kTextSmall, colors::Muted, 220, false);
         }
     }
