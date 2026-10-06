@@ -16,7 +16,7 @@ struct DeviceSettings {
     SpeedDisplayMode speedDisplayMode{SpeedDisplayMode::LimitPrimary};
     bool showStreet{true};
     bool mirrorHud{false};
-    bool rotateDisplay{true};
+    bool rotateDisplay{false};
     int8_t overspeedOffsetKmh{0};
     int8_t offsetX{0};
     int8_t offsetY{0};
