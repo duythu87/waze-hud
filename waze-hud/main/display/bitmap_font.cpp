@@ -336,7 +336,8 @@ const assets::FontGlyph *fontGlyph(const assets::BitmapFont &font, uint32_t code
     }
     if (first < font.glyphCount && font.glyphs[first].codepoint == codepoint)
         return &font.glyphs[first];
-    if (codepoint != static_cast<uint32_t>('?')) return fontGlyph(font, '?');
+    if (codepoint != static_cast<uint32_t>('?') && codepoint != static_cast<uint32_t>('.'))
+        return fontGlyph(font, '?');
     return nullptr;
 }
 
@@ -367,9 +368,11 @@ void Canvas::fontText(int x, int y, const char *utf8, const assets::BitmapFont &
     int drawnWidth = 0;
     for (std::size_t index = 0; index < count; ++index)
         drawnWidth += codepointWidth(font, codepoints[index]);
-    if (maxWidth > 0 && drawnWidth > maxWidth) {
+    const assets::FontGlyph *dotGlyph = fontGlyph(font, '.');
+    const bool hasDot = (dotGlyph != nullptr && dotGlyph->codepoint == '.');
+    if (maxWidth > 0 && drawnWidth > maxWidth && hasDot) {
         ellipsis = true;
-        const int dotsWidth = 3 * codepointWidth(font, '.');
+        const int dotsWidth = 3 * dotGlyph->advance;
         visible = 0;
         drawnWidth = dotsWidth;
         while (visible < count) {
