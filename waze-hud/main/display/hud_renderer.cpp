@@ -186,8 +186,8 @@ void drawGuidanceLane(Canvas &canvas, int x, int spacing, const LaneState &lane,
     constexpr int midY = 38;
     constexpr int topY = 14;
     constexpr int stroke = 4;
-    constexpr int arrowSize = 8;
-    constexpr int branchLen = 16;
+    constexpr int arrowSize = 9;    // slightly larger head for sharper look
+    constexpr int branchLen = 18;   // slightly longer branch for clarity
 
     const bool hasStraight = (lane.directionMask & 0x01) != 0;
     const bool hasSlightLeft = (lane.directionMask & 0x02) != 0;
@@ -219,7 +219,13 @@ void drawGuidanceLane(Canvas &canvas, int x, int spacing, const LaneState &lane,
         canvas.fillRect(x - barW / 2, 73, barW, 4, colors::Green);
     }
 
-    // 1. COMBINATION: STRAIGHT + U-TURN (Shape 2 from user sketch)
+    // Helper: draw diagonal arrow head following the (dx,dy) direction of the branch
+    // endX/endY = tip of arrow, startX/startY = base of branch (for direction vector)
+    auto diagonalHead = [&](int tipX, int tipY, int startX, int startY, uint16_t col) {
+        arrowHead(canvas, tipX, tipY, tipX - startX, tipY - startY, col, 3);
+    };
+
+    // 1. COMBINATION: STRAIGHT + U-TURN
     if (hasStraight && hasUTurn) {
         const int sx = x + 6;
         const int lx = x - 7;
@@ -228,8 +234,10 @@ void drawGuidanceLane(Canvas &canvas, int x, int spacing, const LaneState &lane,
         canvas.line(sx, baseY, sx, topY, cStraight, stroke);
         drawArrowHeadDir(canvas, sx, topY - arrowSize / 2, 0, cStraight, arrowSize);
 
+        // U-turn: smooth corner with fillCircle at bend
         canvas.line(sx, forkY, lx, forkY, cUTurn, stroke);
         canvas.line(lx, forkY, lx, midY + 14, cUTurn, stroke);
+        canvas.fillCircle(lx, forkY, stroke / 2, cUTurn);  // smooth corner
         drawArrowHeadDir(canvas, lx, midY + 14 + arrowSize, 1, cUTurn, arrowSize);
 
         if (hasLeft) {
@@ -246,7 +254,7 @@ void drawGuidanceLane(Canvas &canvas, int x, int spacing, const LaneState &lane,
         return;
     }
 
-    // 2. COMBINATION: U-TURN (+ optional LEFT/RIGHT, without straight) (Shape 1 from user sketch)
+    // 2. COMBINATION: U-TURN only (+ optional LEFT/RIGHT, without straight)
     if (hasUTurn && !hasStraight) {
         const int rx = x + 5;
         const int lx = x - 8;
@@ -254,6 +262,9 @@ void drawGuidanceLane(Canvas &canvas, int x, int spacing, const LaneState &lane,
         canvas.line(rx, baseY, rx, topY + 4, cUTurn, stroke);
         canvas.line(rx, topY + 4, lx, topY + 4, cUTurn, stroke);
         canvas.line(lx, topY + 4, lx, midY + 14, cUTurn, stroke);
+        // Smooth corner at top-right and top-left bends
+        canvas.fillCircle(rx, topY + 4, stroke / 2, cUTurn);
+        canvas.fillCircle(lx, topY + 4, stroke / 2, cUTurn);
         drawArrowHeadDir(canvas, lx, midY + 14 + arrowSize, 1, cUTurn, arrowSize);
 
         if (hasLeft) {
@@ -270,22 +281,24 @@ void drawGuidanceLane(Canvas &canvas, int x, int spacing, const LaneState &lane,
         return;
     }
 
-    // 3. ONLY LEFT (90 deg)
+    // 3. ONLY LEFT (90 deg) — with smooth corner arc
     if (hasLeft && !hasStraight && !hasRight) {
         const int rx = x + 5;
         const int lx = x - branchLen;
         canvas.line(rx, baseY, rx, topY + 4, cLeft, stroke);
         canvas.line(rx, topY + 4, lx, topY + 4, cLeft, stroke);
+        canvas.fillCircle(rx, topY + 4, stroke / 2, cLeft);  // smooth corner
         drawArrowHeadDir(canvas, lx - arrowSize, topY + 4, 2, cLeft, arrowSize);
         return;
     }
 
-    // 4. ONLY RIGHT (90 deg)
+    // 4. ONLY RIGHT (90 deg) — with smooth corner arc
     if (hasRight && !hasStraight && !hasLeft) {
         const int lx = x - 5;
         const int rx = x + branchLen;
         canvas.line(lx, baseY, lx, topY + 4, cRight, stroke);
         canvas.line(lx, topY + 4, rx, topY + 4, cRight, stroke);
+        canvas.fillCircle(lx, topY + 4, stroke / 2, cRight);  // smooth corner
         drawArrowHeadDir(canvas, rx + arrowSize, topY + 4, 3, cRight, arrowSize);
         return;
     }
@@ -296,28 +309,33 @@ void drawGuidanceLane(Canvas &canvas, int x, int spacing, const LaneState &lane,
         canvas.line(x, midY, x, topY, cStraight, stroke);
         drawArrowHeadDir(canvas, x, topY - arrowSize / 2, 0, cStraight, arrowSize);
 
-        // Left branch (90 deg)
+        // Left branch (90 deg) — with smooth corner
         if (hasLeft) {
             const int lx = x - branchLen;
             canvas.line(x, midY, lx, midY, cLeft, stroke);
+            canvas.fillCircle(x, midY, stroke / 2, cLeft);  // corner dot
             drawArrowHeadDir(canvas, lx - arrowSize, midY, 2, cLeft, arrowSize);
         } else if (hasSlightLeft) {
-            const int lx = x - branchLen * 3 / 4;
-            const int ly = midY - 10;
+            // Diagonal branch — use longer stem & diagonal arrowHead matching the line direction
+            const int lx = x - branchLen * 4 / 5;
+            const int ly = midY - 12;
             canvas.line(x, midY, lx, ly, cSlightLeft, stroke);
-            drawArrowHeadDir(canvas, lx - arrowSize / 2, ly - arrowSize / 2, 0, cSlightLeft, arrowSize);
+            // Arrowhead along the diagonal direction (dx = lx-x, dy = ly-midY)
+            arrowHead(canvas, lx, ly, lx - x, ly - midY, cSlightLeft, 3);
         }
 
-        // Right branch (90 deg)
+        // Right branch (90 deg) — with smooth corner
         if (hasRight) {
             const int rx = x + branchLen;
             canvas.line(x, midY, rx, midY, cRight, stroke);
+            canvas.fillCircle(x, midY, stroke / 2, cRight);  // corner dot
             drawArrowHeadDir(canvas, rx + arrowSize, midY, 3, cRight, arrowSize);
         } else if (hasSlightRight) {
-            const int rx = x + branchLen * 3 / 4;
-            const int ry = midY - 10;
+            // Diagonal branch — arrowHead along the line direction
+            const int rx = x + branchLen * 4 / 5;
+            const int ry = midY - 12;
             canvas.line(x, midY, rx, ry, cSlightRight, stroke);
-            drawArrowHeadDir(canvas, rx + arrowSize / 2, ry - arrowSize / 2, 0, cSlightRight, arrowSize);
+            arrowHead(canvas, rx, ry, rx - x, ry - midY, cSlightRight, 3);
         }
         return;
     }
@@ -326,6 +344,8 @@ void drawGuidanceLane(Canvas &canvas, int x, int spacing, const LaneState &lane,
     canvas.line(x, baseY, x, topY, baseCol, stroke);
     drawArrowHeadDir(canvas, x, topY - arrowSize / 2, 0, baseCol, arrowSize);
 }
+
+
 
 const assets::AlphaMask *maneuverAsset(Maneuver maneuver) {
     switch (maneuver) {
@@ -1081,14 +1101,14 @@ void HudRenderer::renderSpeedCluster(Canvas &canvas, const HudState &state,
     canvas.clear(colors::Panel);
 
 #if CONFIG_WAZE_HUD_DISPLAY_CYD_28
-    constexpr int signX = 64;
-    constexpr int signY = 58;
-    constexpr int outerRadius = 54;
-    constexpr int innerRadius = 45;
-    constexpr int badgeX = 92;
-    constexpr int badgeY = 94;
-    constexpr int badgeW = 44;
-    constexpr int badgeH = 32;
+    constexpr int signX = 70;
+    constexpr int signY = 62;
+    constexpr int outerRadius = 60;
+    constexpr int innerRadius = 50;
+    constexpr int badgeW = 38;
+    constexpr int badgeH = 28;
+    constexpr int badgeX = 140 - badgeW - 2; // 100
+    constexpr int badgeY = 130 - badgeH - 2; // 100
 #else
     constexpr int signX = 64;
     const int signY = mainY(58);
@@ -1226,7 +1246,7 @@ void HudRenderer::renderAlerts(Canvas &canvas, const HudState &state, const Devi
             canvas.fontText(24, secondaryTextY, distance, assets::kTextSmall,
                             alertDistanceColor(upcoming.distanceM, colors::White), 47, true);
         }
-    } else {
+    } else if (state.navigationActive) {
         const uint8_t count = std::min<uint8_t>(2, state.upcomingAlertCount);
 #if CONFIG_WAZE_HUD_DISPLAY_CYD_28
         constexpr int secondaryIconY = 94;
