@@ -58,7 +58,7 @@ void overspeedLedTask(void *) {
         const int threshold = std::max(0, state.speedLimitKmh +
                                            static_cast<int>(settings.overspeedOffsetKmh));
         const bool overspeed = state.connected && state.hasProducerState &&
-                               state.navigationActive && !state.signalStale &&
+                               !state.signalStale &&
                                state.speedLimitKmh > 0 && state.speedKmh > threshold;
         if (!state.connected) {
             const bool *color = palette[disconnectedPhase % 6];

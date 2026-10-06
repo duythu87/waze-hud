@@ -14,13 +14,15 @@ Tại trang Releases, chọn tải file `.bin` All-in-One phù hợp với phiê
 
 | Phiên bản mạch phần cứng | Phương thức kết nối | File Firmware trong Release | Link tải trực tiếp (.bin) | Nhánh mã nguồn |
 |---|---|---|:---:|:---:|
-| **CYD 2.8" (2 Cổng USB Type-C / Micro)** | Bluetooth BLE | `waze_hud_cyd_28_factory.bin` | [📥 **Tải về**](https://github.com/quangdo92/waze-hud/releases/download/v2.8.2/waze_hud_cyd_28_factory.bin) | [`CYD2.8-V2USB`](https://github.com/quangdo92/waze-hud/tree/CYD2.8-V2USB) |
-| **CYD 2.8" (1 Cổng USB Micro)** | Bluetooth BLE | `waze_hud_cyd_28_1usb_factory.bin` | [📥 **Tải về**](https://github.com/quangdo92/waze-hud/releases/download/v2.8.2/waze_hud_cyd_28_1usb_factory.bin) | [`CYD2.8-V1USB`](https://github.com/quangdo92/waze-hud/tree/CYD2.8-V1USB) |
-| **CYD 2.8" (2 Cổng USB Type-C / Micro)** | Cáp USB Serial (CH340) | `waze_hud_cyd_28_usb_factory.bin` | [📥 **Tải về**](https://github.com/quangdo92/waze-hud/releases/download/v2.8.2/waze_hud_cyd_28_usb_factory.bin) | [`2.8-in-CYD-USB`](https://github.com/quangdo92/waze-hud/tree/2.8-in-CYD-USB) |
-| **CYD 2.8" (1 Cổng USB Micro)** | Cáp USB Serial (CH340) | `waze_hud_cyd_28_1usb_serial_factory.bin` | [📥 **Tải về**](https://github.com/quangdo92/waze-hud/releases/download/v2.8.2/waze_hud_cyd_28_1usb_serial_factory.bin) | [`CYD2.8-V1USB-Serial`](https://github.com/quangdo92/waze-hud/tree/CYD2.8-V1USB-Serial) |
+| **CYD 2.8" (2 Cổng USB Type-C / Micro)** | Bluetooth BLE | `waze_hud_cyd_28_factory.bin` | [📥 **Tải về**](https://github.com/quangdo92/waze-hud/releases/download/v2.8.8-b8/waze_hud_cyd_28_factory.bin) | [`CYD2.8-V2USB`](https://github.com/quangdo92/waze-hud/tree/CYD2.8-V2USB) |
+| **CYD 2.8" (1 Cổng USB Micro)** | Bluetooth BLE | `waze_hud_cyd_28_1usb_factory.bin` | [📥 **Tải về**](https://github.com/quangdo92/waze-hud/releases/download/v2.8.8-b8/waze_hud_cyd_28_1usb_factory.bin) | [`CYD2.8-V1USB`](https://github.com/quangdo92/waze-hud/tree/CYD2.8-V1USB) |
+| **CYD 2.8" (2 Cổng USB Type-C / Micro)** | Cáp USB Serial (CH340) | `waze_hud_cyd_28_usb_factory.bin` | [📥 **Tải về**](https://github.com/quangdo92/waze-hud/releases/download/v2.8.8-b8/waze_hud_cyd_28_usb_factory.bin) | [`2.8-in-CYD-USB`](https://github.com/quangdo92/waze-hud/tree/2.8-in-CYD-USB) |
+| **CYD 2.8" (1 Cổng USB Micro)** | Cáp USB Serial (CH340) | `waze_hud_cyd_28_1usb_serial_factory.bin` | [📥 **Tải về**](https://github.com/quangdo92/waze-hud/releases/download/v2.8.8-b8/waze_hud_cyd_28_1usb_serial_factory.bin) | [`CYD2.8-V1USB-Serial`](https://github.com/quangdo92/waze-hud/tree/CYD2.8-V1USB-Serial) |
 
 > [!TIP]
 > Toàn bộ các file trên đều là bản **Factory All-in-One** (đã tích hợp sẵn Bootloader, Partition Table và Firmware). Chỉ cần nạp duy nhất 1 file tại offset **`0x0`** là thiết bị khởi động chạy ngay!
+
+![WazeHUD Release B8 Demo](docs/release_b8_showcase.png)
 
 ### 🌐 Cách 1: Nạp trực tiếp qua Web Flasher (Khuyên dùng - Cực dễ cho mọi người)
 Bạn có thể sử dụng công cụ Web Flasher của tác giả WazeMod trực tiếp trên trình duyệt web (Chrome, Edge, Cốc Cốc trên máy tính hoặc điện thoại Android) mà không cần cài đặt Python hay bất kỳ phần mềm nào:
@@ -77,6 +79,14 @@ python -m esptool --chip esp32 -b 460800 write_flash 0x0 <ten_file_factory.bin>
 - Cơ chế Dirty-region rendering: Chỉ vẽ lại đúng vùng có dữ liệu thay đổi, đảm bảo tốc độ đáp ứng tối đa và không rung giật khung hình.
 
 ## Nhật ký thay đổi (Changelog)
+
+### [Bản B8] - 2026-10-06 (Khuyên Dùng - Tối Ưu Taplo Toàn Diện)
+- 🛑 **Cụm Biển Giới Hạn Tốc Độ Cỡ Đại ($R=54\text{ px}$, đường kính $108\text{ px}$):** Phóng to tối đa vòng tròn biển báo, số to đậm nét chuẩn DejaVu Sans Bold, nét viền đỏ 100% rực rỡ dày 11px, khắc phục triệt để lỗi hiển thị dấu hỏi `???`.
+- 🏷️ **Huy Hiệu Tốc Độ Xe Góc Dưới Phải ($44 \times 32\text{ px}$):** Bỏ chữ km/h rườm rà. Đặt tốc độ xe thực tế vào huy hiệu bo góc tại $(177, 94)$. Tự động chuyển font khi chạy $> 100\text{ km/h}$, tuyệt đối không bị tràn viền che khuất cảnh báo hay đồng hồ.
+- 🧭 **Chế Độ Chạy Tự Do (Free Drive) Hiển Thị Tất Cả Cảnh Báo:** Tận dụng 100% dải đáy màn hình ($320 \times 82\text{ px}$) hiển thị đồng thời lên đến 4 thẻ cảnh báo độc lập hoặc banner xanh thông thoáng. Cột trái hiển thị la bàn Cruise.
+- 🚨 **Cảnh Báo Quá Tốc Độ Mọi Chế Độ:** Viền đỏ toàn màn hình, huy hiệu tốc độ chuyển đỏ và đèn LED lưng nhấp nháy 2 Hz ngay cả khi xe đang chạy tự do (không cần bật dẫn đường).
+- 📡 **Ổn Định Kết Nối Tuyệt Đối:** Chuẩn hóa giao thức HLP 9 phần tử cấu hình, giải quyết triệt để vấn đề handshake tự ngắt kết nối.
+- 📦 **Phát hành đầy đủ 4 biến thể:** BLE 2 cổng USB, BLE 1 cổng USB, Cáp USB Serial 2 cổng USB, Cáp USB Serial 1 cổng USB.
 
 ### [CYD2.82USB] - 2026-10-05
 #### 🚦 Cảnh báo Đèn giao thông mới (Traffic Light Alert - Mã 75)
