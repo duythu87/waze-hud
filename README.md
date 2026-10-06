@@ -12,11 +12,12 @@
 
 Tại trang Releases, chọn tải file `.bin` All-in-One phù hợp với phiên bản mạch phần cứng của bạn:
 
-| Phiên bản mạch phần cứng | File Firmware trong Release | Link tải trực tiếp (.bin) | Nhánh mã nguồn |
-|---|---|:---:|:---:|
-| **CYD 2.8" (2 Cổng USB Type-C / Micro - BLE)** | `waze_hud_cyd_28_factory.bin` | [📥 **Tải về**](https://github.com/quangdo92/waze-hud/releases/download/v2.8.2/waze_hud_cyd_28_factory.bin) | [`CYD2.8-V2USB`](https://github.com/quangdo92/waze-hud/tree/CYD2.8-V2USB) |
-| **CYD 2.8" (1 Cổng USB Micro - BLE)** | `waze_hud_cyd_28_1usb_factory.bin` | [📥 **Tải về**](https://github.com/quangdo92/waze-hud/releases/download/v2.8.2/waze_hud_cyd_28_1usb_factory.bin) | [`CYD2.8-V1USB`](https://github.com/quangdo92/waze-hud/tree/CYD2.8-V1USB) |
-| **CYD 2.8" Cáp USB Serial (CH340 115200 baud)** | `waze_hud_cyd_28_usb_factory.bin` | [📥 **Tải về**](https://github.com/quangdo92/waze-hud/releases/download/v2.8.2/waze_hud_cyd_28_usb_factory.bin) | [`2.8-in-CYD-USB`](https://github.com/quangdo92/waze-hud/tree/2.8-in-CYD-USB) |
+| Phiên bản mạch phần cứng | Phương thức kết nối | File Firmware trong Release | Link tải trực tiếp (.bin) | Nhánh mã nguồn |
+|---|---|---|:---:|:---:|
+| **CYD 2.8" (2 Cổng USB Type-C / Micro)** | Bluetooth BLE | `waze_hud_cyd_28_factory.bin` | [📥 **Tải về**](https://github.com/quangdo92/waze-hud/releases/download/v2.8.2/waze_hud_cyd_28_factory.bin) | [`CYD2.8-V2USB`](https://github.com/quangdo92/waze-hud/tree/CYD2.8-V2USB) |
+| **CYD 2.8" (1 Cổng USB Micro)** | Bluetooth BLE | `waze_hud_cyd_28_1usb_factory.bin` | [📥 **Tải về**](https://github.com/quangdo92/waze-hud/releases/download/v2.8.2/waze_hud_cyd_28_1usb_factory.bin) | [`CYD2.8-V1USB`](https://github.com/quangdo92/waze-hud/tree/CYD2.8-V1USB) |
+| **CYD 2.8" (2 Cổng USB Type-C / Micro)** | Cáp USB Serial (CH340) | `waze_hud_cyd_28_usb_factory.bin` | [📥 **Tải về**](https://github.com/quangdo92/waze-hud/releases/download/v2.8.2/waze_hud_cyd_28_usb_factory.bin) | [`2.8-in-CYD-USB`](https://github.com/quangdo92/waze-hud/tree/2.8-in-CYD-USB) |
+| **CYD 2.8" (1 Cổng USB Micro)** | Cáp USB Serial (CH340) | `waze_hud_cyd_28_1usb_serial_factory.bin` | [📥 **Tải về**](https://github.com/quangdo92/waze-hud/releases/download/v2.8.2/waze_hud_cyd_28_1usb_serial_factory.bin) | [`CYD2.8-V1USB-Serial`](https://github.com/quangdo92/waze-hud/tree/CYD2.8-V1USB-Serial) |
 
 > [!TIP]
 > Toàn bộ các file trên đều là bản **Factory All-in-One** (đã tích hợp sẵn Bootloader, Partition Table và Firmware). Chỉ cần nạp duy nhất 1 file tại offset **`0x0`** là thiết bị khởi động chạy ngay!
