@@ -1397,40 +1397,7 @@ void HudRenderer::renderGuidance(Canvas &canvas, const HudState &state,
                 }
             }
         }
-    } else if (state.navigationActive && (state.eta[0] != 0 || state.remainingMinutes > 0 || state.remainingKm > 0.0F)) {
-        constexpr int etaWidth = 85;
-        canvas.fillRect(etaWidth - 1, 6, 1, layout::GuidanceHeight - 12, colors::Muted);
-
-        if (state.eta[0] != 0) {
-            canvas.fontText(0, 8, "ETA", assets::kTextSmall, colors::White, etaWidth - 2, true);
-            canvas.fontText(0, 36, state.eta.data(), assets::kTextLarge, colors::White, etaWidth - 2, true);
-        }
-
-        if (state.remainingMinutes > 0 || state.remainingKm > 0) {
-            char distBuf[16]{};
-            if (state.remainingKm >= 1.0F) {
-                std::snprintf(distBuf, sizeof(distBuf), "%.1f km", state.remainingKm);
-            } else if (state.remainingMeters > 0) {
-                std::snprintf(distBuf, sizeof(distBuf), "%d m", state.remainingMeters);
-            }
-            char timeBuf[16]{};
-            if (state.remainingMinutes >= 60) {
-                std::snprintf(timeBuf, sizeof(timeBuf), "%dh %02dp",
-                              state.remainingMinutes / 60, state.remainingMinutes % 60);
-            } else if (state.remainingMinutes > 0) {
-                std::snprintf(timeBuf, sizeof(timeBuf), "%d ph", state.remainingMinutes);
-            }
-            if (distBuf[0] != 0) {
-                canvas.fontText(98, 8, "CÒN LẠI", assets::kTextSmall, colors::White, 100, false);
-                canvas.fontText(98, 36, distBuf, assets::kTextMedium, colors::White, 100, false);
-            }
-            if (timeBuf[0] != 0) {
-                canvas.fontText(210, 8, "THỜI GIAN", assets::kTextSmall, colors::White, 100, false);
-                canvas.fontText(210, 36, timeBuf, assets::kTextMedium, colors::White, 100, false);
-            }
-        }
     } else {
-        // Free drive mode (chạy tự do): hiển thị toàn bộ cảnh báo ở hàng dưới
         AlertState allAlerts[4];
         uint8_t alertCount = 0;
 
@@ -1463,58 +1430,92 @@ void HudRenderer::renderGuidance(Canvas &canvas, const HudState &state,
             }
         }
 
-        if (alertCount == 1) {
-            const auto &alert = allAlerts[0];
-            drawCard(canvas, 10, 8, 300, 66, colors::Muted);
-            drawAlertIcon(canvas, 45, 41, 20, alert, true);
-            canvas.fontText(80, 16, alertKindLabel(alert.kind), assets::kTextMedium, colors::White, 210, false);
-            char distance[16]; formatDistance(alert.distanceM, distance, sizeof(distance));
-            canvas.fontText(80, 42, distance, assets::kTextLarge, alertDistanceColor(alert.distanceM, colors::Cyan), 120, false);
-            if (alert.kind == AlertKind::TrafficJam && alert.trafficDelayMinutes >= 0) {
-                char trafficDetail[48];
-                std::snprintf(trafficDetail, sizeof(trafficDetail), "+%d PH (%s)",
-                              alert.trafficDelayMinutes, trafficSeverityLabel(alert.trafficSeverity));
-                canvas.fontText(190, 44, trafficDetail, assets::kTextSmall, trafficSeverityColor(alert.trafficSeverity), 110, false);
-            } else if (alert.valueKmh > 0) {
-                char valBuf[32];
-                std::snprintf(valBuf, sizeof(valBuf), "G/H: %d km/h", alert.valueKmh);
-                canvas.fontText(190, 44, valBuf, assets::kTextSmall, colors::Amber, 110, false);
-            }
-        } else if (alertCount == 2) {
-            constexpr int cardW = 146;
-            constexpr int cardH = 68;
-            for (int i = 0; i < 2; ++i) {
-                const int cx1 = 10 + i * 154;
-                const auto &alert = allAlerts[i];
-                drawCard(canvas, cx1, 7, cardW, cardH, colors::Muted);
-                drawAlertIcon(canvas, cx1 + 26, 41, 16, alert, i == 0);
-                canvas.fontText(cx1 + 50, 16, alertKindLabel(alert.kind), assets::kTextSmall, colors::White, cardW - 54, false);
+        if (alertCount > 0) {
+            if (alertCount == 1) {
+                const auto &alert = allAlerts[0];
+                drawCard(canvas, 10, 8, 300, 66, colors::Muted);
+                drawAlertIcon(canvas, 45, 41, 20, alert, true);
+                canvas.fontText(80, 16, alertKindLabel(alert.kind), assets::kTextMedium, colors::White, 210, false);
                 char distance[16]; formatDistance(alert.distanceM, distance, sizeof(distance));
-                canvas.fontText(cx1 + 50, 40, distance, assets::kTextMedium, alertDistanceColor(alert.distanceM, colors::Cyan), cardW - 54, false);
+                canvas.fontText(80, 42, distance, assets::kTextLarge, alertDistanceColor(alert.distanceM, colors::Cyan), 120, false);
+                if (alert.kind == AlertKind::TrafficJam && alert.trafficDelayMinutes >= 0) {
+                    char trafficDetail[48];
+                    std::snprintf(trafficDetail, sizeof(trafficDetail), "+%d PH (%s)",
+                                  alert.trafficDelayMinutes, trafficSeverityLabel(alert.trafficSeverity));
+                    canvas.fontText(190, 44, trafficDetail, assets::kTextSmall, trafficSeverityColor(alert.trafficSeverity), 110, false);
+                } else if (alert.valueKmh > 0) {
+                    char valBuf[32];
+                    std::snprintf(valBuf, sizeof(valBuf), "G/H: %d km/h", alert.valueKmh);
+                    canvas.fontText(190, 44, valBuf, assets::kTextSmall, colors::Amber, 110, false);
+                }
+            } else if (alertCount == 2) {
+                constexpr int cardW = 146;
+                constexpr int cardH = 68;
+                for (int i = 0; i < 2; ++i) {
+                    const int cx1 = 10 + i * 154;
+                    const auto &alert = allAlerts[i];
+                    drawCard(canvas, cx1, 7, cardW, cardH, colors::Muted);
+                    drawAlertIcon(canvas, cx1 + 26, 41, 16, alert, i == 0);
+                    canvas.fontText(cx1 + 50, 16, alertKindLabel(alert.kind), assets::kTextSmall, colors::White, cardW - 54, false);
+                    char distance[16]; formatDistance(alert.distanceM, distance, sizeof(distance));
+                    canvas.fontText(cx1 + 50, 40, distance, assets::kTextMedium, alertDistanceColor(alert.distanceM, colors::Cyan), cardW - 54, false);
+                }
+            } else if (alertCount == 3) {
+                constexpr int cardW = 98;
+                constexpr int cardH = 68;
+                for (int i = 0; i < 3; ++i) {
+                    const int cx1 = 7 + i * 103;
+                    const auto &alert = allAlerts[i];
+                    drawCard(canvas, cx1, 7, cardW, cardH, colors::Muted);
+                    drawAlertIcon(canvas, cx1 + cardW / 2, 24, 14, alert, i == 0);
+                    char distance[16]; formatDistance(alert.distanceM, distance, sizeof(distance));
+                    canvas.fontText(cx1 + 2, 42, distance, assets::kTextSmall, alertDistanceColor(alert.distanceM, colors::Cyan), cardW - 4, true);
+                    canvas.fontText(cx1 + 2, 56, alertKindLabel(alert.kind), assets::kTextSmall, colors::White, cardW - 4, true);
+                }
+            } else if (alertCount >= 4) {
+                constexpr int cardW = 73;
+                constexpr int cardH = 68;
+                for (int i = 0; i < 4; ++i) {
+                    const int cx1 = 6 + i * 78;
+                    const auto &alert = allAlerts[i];
+                    drawCard(canvas, cx1, 7, cardW, cardH, colors::Muted);
+                    drawAlertIcon(canvas, cx1 + cardW / 2, 24, 13, alert, i == 0);
+                    char distance[16]; formatDistance(alert.distanceM, distance, sizeof(distance));
+                    canvas.fontText(cx1 + 2, 42, distance, assets::kTextSmall, alertDistanceColor(alert.distanceM, colors::Cyan), cardW - 4, true);
+                    canvas.fontText(cx1 + 2, 56, alertKindLabel(alert.kind), assets::kTextSmall, colors::White, cardW - 4, true);
+                }
             }
-        } else if (alertCount == 3) {
-            constexpr int cardW = 98;
-            constexpr int cardH = 68;
-            for (int i = 0; i < 3; ++i) {
-                const int cx1 = 7 + i * 103;
-                const auto &alert = allAlerts[i];
-                drawCard(canvas, cx1, 7, cardW, cardH, colors::Muted);
-                drawAlertIcon(canvas, cx1 + cardW / 2, 24, 14, alert, i == 0);
-                char distance[16]; formatDistance(alert.distanceM, distance, sizeof(distance));
-                canvas.fontText(cx1 + 2, 42, distance, assets::kTextSmall, alertDistanceColor(alert.distanceM, colors::Cyan), cardW - 4, true);
-                canvas.fontText(cx1 + 2, 56, alertKindLabel(alert.kind), assets::kTextSmall, colors::White, cardW - 4, true);
+        } else if (state.navigationActive && (state.eta[0] != 0 || state.remainingMinutes > 0 || state.remainingKm > 0.0F)) {
+            constexpr int etaWidth = 85;
+            canvas.fillRect(etaWidth - 1, 6, 1, layout::GuidanceHeight - 12, colors::Muted);
+
+            if (state.eta[0] != 0) {
+                canvas.fontText(0, 8, "ETA", assets::kTextSmall, colors::White, etaWidth - 2, true);
+                canvas.fontText(0, 36, state.eta.data(), assets::kTextLarge, colors::White, etaWidth - 2, true);
             }
-        } else if (alertCount >= 4) {
-            constexpr int cardW = 73;
-            constexpr int cardH = 68;
-            for (int i = 0; i < 4; ++i) {
-                const int cx1 = 6 + i * 78;
-                const auto &alert = allAlerts[i];
-                drawCard(canvas, cx1, 7, cardW, cardH, colors::Muted);
-                drawAlertIcon(canvas, cx1 + cardW / 2, 24, 13, alert, i == 0);
-                char distance[16]; formatDistance(alert.distanceM, distance, sizeof(distance));
-                canvas.fontText(cx1 + 2, 42, distance, assets::kTextSmall, alertDistanceColor(alert.distanceM, colors::Cyan), cardW - 4, true);
-                canvas.fontText(cx1 + 2, 56, alertKindLabel(alert.kind), assets::kTextSmall, colors::White, cardW - 4, true);
+
+            if (state.remainingMinutes > 0 || state.remainingKm > 0) {
+                char distBuf[16]{};
+                if (state.remainingKm >= 1.0F) {
+                    std::snprintf(distBuf, sizeof(distBuf), "%.1f km", state.remainingKm);
+                } else if (state.remainingMeters > 0) {
+                    std::snprintf(distBuf, sizeof(distBuf), "%d m", state.remainingMeters);
+                }
+                char timeBuf[16]{};
+                if (state.remainingMinutes >= 60) {
+                    std::snprintf(timeBuf, sizeof(timeBuf), "%dh %02dp",
+                                  state.remainingMinutes / 60, state.remainingMinutes % 60);
+                } else if (state.remainingMinutes > 0) {
+                    std::snprintf(timeBuf, sizeof(timeBuf), "%d ph", state.remainingMinutes);
+                }
+                if (distBuf[0] != 0) {
+                    canvas.fontText(98, 8, "CÒN LẠI", assets::kTextSmall, colors::White, 100, false);
+                    canvas.fontText(98, 36, distBuf, assets::kTextMedium, colors::White, 100, false);
+                }
+                if (timeBuf[0] != 0) {
+                    canvas.fontText(210, 8, "THỜI GIAN", assets::kTextSmall, colors::White, 100, false);
+                    canvas.fontText(210, 36, timeBuf, assets::kTextMedium, colors::White, 100, false);
+                }
             }
         } else {
             drawCard(canvas, 16, 12, 288, 58, colors::Muted);
