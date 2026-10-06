@@ -329,18 +329,18 @@ bool HlpDecoder::decodeState(const cJSON *root, HudState &state) {
         const int64_t dt = laneLastCheckMs_ > 0 ? std::clamp(nowMs - laneLastCheckMs_, 0LL, 1000LL) : 0LL;
         laneLastCheckMs_ = nowMs;
 
-        if (decoded.speedKmh >= 10) {
-            // Khi tốc độ lên cao (>= 10 km/h): Bắt đầu/tiếp tục đếm tích lũy thời gian
+        if (decoded.speedKmh >= 25) {
+            // Khi tốc độ lên cao (>= 25 km/h): Bắt đầu/tiếp tục đếm tích lũy thời gian
             laneHoldAccumulatedMovingMs_ += dt;
         }
-        // Khi tốc độ < 10 km/h (dừng đèn đỏ, kẹt xe): TẠM NGƯNG ĐẾM GIÂY (laneHoldAccumulatedMovingMs_ giữ nguyên)
+        // Khi tốc độ < 25 km/h (dừng đèn đỏ, kẹt xe): TẠM NGƯNG ĐẾM GIÂY (laneHoldAccumulatedMovingMs_ giữ nguyên)
 
         constexpr int64_t kLaneHoldTimeoutMs = 15000;
         if (laneHoldAccumulatedMovingMs_ < kLaneHoldTimeoutMs) {
             decoded.lanes = cachedLanes_;
             decoded.laneCount = cachedLaneCount_;
         } else {
-            // Đã chạy trên 10 km/h đủ 15 giây mà không có lane mới: Xóa lane cũ
+            // Đã chạy trên 25 km/h đủ 15 giây mà không có lane mới: Xóa lane cũ
             cachedLaneCount_ = 0;
             laneHoldAccumulatedMovingMs_ = 0;
             decoded.laneCount = 0;
