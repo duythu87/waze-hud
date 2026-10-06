@@ -1296,13 +1296,6 @@ void HudRenderer::renderAlerts(Canvas &canvas, const HudState &state, const Devi
 #else
             canvas.fontText(1, mainY(78), valBuf, assets::kTextSmall, colors::Amber, 93, true);
 #endif
-        } else {
-#if CONFIG_WAZE_HUD_DISPLAY_CYD_28
-            const int labelY = hasSecondary ? 78 : 96;
-            canvas.fontText(1, labelY, alertKindLabel(primary.kind), assets::kTextSmall, colors::White, 93, true);
-#else
-            canvas.fontText(1, mainY(78), alertKindLabel(primary.kind), assets::kTextSmall, colors::White, 93, true);
-#endif
         }
     }
 
